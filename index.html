@@ -113,6 +113,26 @@ button:focus-visible,[role=button]:focus-visible,input:focus-visible,select:focu
 @media (max-width:460px){.slot{grid-template-columns:auto minmax(0,1fr) 64px;}.slot select.kind{grid-column:2/4}}
 .rules{font-size:13px;color:var(--muted);margin:14px 0;padding-left:18px}
 .win{text-align:center}
+.h2row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px}
+.h2row h2{margin:0}
+.tag{font-family:var(--display);font-size:12px;letter-spacing:.08em;background:var(--taxi);color:#fff;border-radius:6px;padding:1px 8px}
+.iconbtn{border:0;background:var(--panel-2);color:var(--ink);border-radius:8px;padding:3px 9px;font-size:15px;line-height:1.4}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--night);padding:4px;border-radius:12px;margin-bottom:14px}
+.tabs button{border:0;border-radius:9px;padding:9px;background:transparent;color:var(--muted);font-weight:600}
+.tabs button[aria-selected=true]{background:var(--panel-2);color:var(--ink)}
+.field{display:grid;gap:4px;margin-bottom:10px;font-size:13px;color:var(--muted)}
+.field input,.field select{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit;min-width:0;width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.row>.field{flex:1 1 140px;margin:0}
+.code{font-family:var(--display);font-size:44px;letter-spacing:.18em;color:var(--gold);line-height:1;margin:6px 0 4px}
+.code-in{text-transform:uppercase;letter-spacing:.2em;font-family:var(--display)}
+.seats{display:grid;gap:6px;margin:12px 0}
+.seat{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--panel-2);border-radius:10px;padding:8px 10px;border-left:4px solid var(--pc)}
+.seat .tk{font-size:22px}
+.rooms{display:grid;gap:6px;margin-top:8px}
+.room{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--panel-2);border-radius:10px;padding:8px 10px;font-size:14px}
+.err{color:var(--taxi);font-size:13px;min-height:1.2em;margin:6px 0 0}
+.sep{border:0;border-top:1px solid var(--line);margin:16px 0}
 .win .big{font-size:64px;line-height:1}
 </style>
 </head>
@@ -120,8 +140,8 @@ button:focus-visible,[role=button]:focus-visible,input:focus-visible,select:focu
 <div class="app">
   <div class="board-wrap"><div class="board" id="board"></div></div>
   <aside class="side">
-    <section class="box"><h2>ผู้เล่น</h2><div class="players" id="players"></div></section>
-    <section class="box"><h2>ตาเดิน</h2><div class="actions" id="actions"></div><p class="hint" id="hint"></p></section>
+    <section class="box"><div class="h2row"><h2>ผู้เล่น</h2><span class="tag" id="roomTag" hidden></span></div><div class="players" id="players"></div></section>
+    <section class="box"><div class="h2row"><h2>ตาเดิน</h2><button class="iconbtn" id="mute" data-act="mute" aria-label="ปิดเสียง">🔊</button></div><div class="actions" id="actions"></div><p class="hint" id="hint"></p></section>
     <section class="box info" id="info"><h2>รายละเอียดช่อง</h2><div id="infoBody"></div></section>
     <section class="box" id="mine"><h2>ทรัพย์สินของคุณ</h2><div class="props" id="props"></div></section>
     <section class="box"><h2>บันทึกเกม</h2><ul class="log" id="log"></ul></section>
@@ -231,7 +251,7 @@ const DEFAULT_SLOTS = [
 
 /* ================= STATE ================= */
 let S = null;            // serialisable game state
-let busy = false, pendingResolve = null, botTimer = null, sel = null, confirmEnd = false;
+let busy = false, pendingResolve = null, botTimer = null, sel = null, confirmEnd = false, confirmTake = false;
 const $ = id => document.getElementById(id);
 const fmt = n => '฿' + Math.round(n).toLocaleString('en-US');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -242,10 +262,150 @@ const cur = () => S.players[S.turn];
 const alive = () => S.players.filter(p => !p.out);
 const isOwnable = t => t.type === 'prop' || t.type === 'rail' || t.type === 'util';
 
-function newGame(slots, maxRounds = 30) {
+/* ================= SOUND (synthesised, no files) ================= */
+const SFX = {ctx:null, on:true};
+try { SFX.on = localStorage.getItem('bkk-mute') !== '1'; } catch (e) {}
+function audio() {
+  if (!SFX.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; SFX.ctx = new C(); }
+  if (SFX.ctx.state === 'suspended') SFX.ctx.resume();
+  return SFX.ctx;
+}
+function tone(c, f, at, dur, type = 'square', vol = .07, f2) {
+  const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + at;
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .02);
+}
+function noise(c, at, dur, vol = .12) {
+  const b = c.createBuffer(1, Math.ceil(c.sampleRate * dur), c.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+  const n = c.createBufferSource(), g = c.createGain(), f = c.createBiquadFilter(), t = c.currentTime + at;
+  f.type = 'bandpass'; f.frequency.value = 2400; n.buffer = b; g.gain.value = vol;
+  n.connect(f).connect(g).connect(c.destination); n.start(t);
+}
+const SOUNDS = {
+  dice: c => { for (let k = 0; k < 7; k++) noise(c, k * .055 + Math.random() * .02, .04, .2); },
+  step: c => tone(c, 900, 0, .035, 'triangle', .04),
+  coin: c => { tone(c, 988, 0, .08); tone(c, 1319, .08, .3); },
+  pay:  c => { tone(c, 392, 0, .12, 'sawtooth', .05, 262); tone(c, 262, .13, .2, 'sawtooth', .05, 175); },
+  buy:  c => [523, 659, 784, 1047].forEach((f, k) => tone(c, f, k * .07, .18, 'square', .055)),
+  build:c => { tone(c, 140, 0, .18, 'sine', .3, 60); noise(c, 0, .08, .15); tone(c, 784, .12, .12, 'triangle', .05); },
+  card: c => { tone(c, 500, 0, .16, 'triangle', .07, 1400); tone(c, 1400, .14, .1, 'triangle', .05); },
+  jail: c => { for (let k = 0; k < 4; k++) tone(c, k % 2 ? 660 : 880, k * .16, .15, 'square', .05); },
+  bad:  c => [440, 392, 349, 262].forEach((f, k) => tone(c, f, k * .14, .2, 'sawtooth', .05)),
+  win:  c => [523, 659, 784, 659, 784, 1047].forEach((f, k) => tone(c, f, k * .12, k === 5 ? .6 : .14, 'square', .06)),
+  turn: c => { tone(c, 784, 0, .12, 'sine', .12); tone(c, 1175, .12, .25, 'sine', .12); },
+};
+function play(k) { if (!SFX.on || !SOUNDS[k]) return; const c = audio(); if (c) try { SOUNDS[k](c); } catch (e) {} }
+/* fx: play now and record it in the state so other players hear it too */
+function fx(k) {
+  play(k);
+  S.fxn = (S.fxn || 0) + 1; S.fx = [...(S.fx || []), {n:S.fxn, k}].slice(-16);
+  NET.lastFx = S.fxn;
+}
+
+/* ================= ONLINE (shared artifact database) ================= */
+const NET = {db:null, user:null, me:null, canWrite:null, ready:false, code:null, ref:null, unsub:null, meta:null,
+  lastV:0, lastJson:'', lastFx:0, applying:false, timer:null, writing:false, dirty:false, queue:Promise.resolve(), err:''};
+const online = () => !!NET.code && !!S && !!S.host;
+const myTurn = () => online() ? !cur().bot && cur().uid === NET.me : !cur().bot;
+const runsBots = () => !online() || S.host === NET.me;
+const mySeat = () => online() ? S.players.find(p => p.uid === NET.me) : (!cur().bot ? cur() : null);
+const ROOM_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const newCode = () => Array.from({length:4}, () => ROOM_CHARS[Math.floor(Math.random() * ROOM_CHARS.length)]).join('');
+const clone = o => JSON.parse(JSON.stringify(o));
+
+/* Only the player whose turn it is (or the host, for bots) changes the game,
+   so writes are single-writer. A version counter drops stale echoes. */
+function netSave() {
+  if (!online() || NET.applying || NET.timer) return;
+  NET.timer = setTimeout(flush, 220);
+}
+async function flush() {
+  NET.timer = null;
+  if (NET.applying || !online()) return;   // a newer remote state is being shown; never write over it
+  if (NET.writing) { NET.dirty = true; return; }
+  const json = JSON.stringify(S);
+  if (json === NET.lastJson) return;
+  NET.writing = true; NET.lastJson = json;
+  const v = ++NET.lastV;
+  try { await NET.ref.set({...NET.meta, status:'playing', S:JSON.parse(json), v, updated:Date.now()}); NET.err = ''; }
+  catch (e) { NET.err = 'บันทึกไม่สำเร็จ: ' + (e && e.code === 'invalid_argument' ? 'คุณไม่มีสิทธิ์เขียน (ขอสิทธิ์ Contributor)' : (e && e.message || e)); renderActions(); }
+  NET.writing = false;
+  if (NET.dirty) { NET.dirty = false; flush(); }
+}
+function applyRemote(data) {
+  NET.queue = NET.queue.then(async () => {
+    if (!data.S || data.v <= NET.lastV) return;
+    const wasMine = S && online() && myTurn();
+    NET.lastV = data.v; NET.applying = true; clearTimeout(NET.timer); NET.timer = null; NET.dirty = false;
+    const fresh = clone(data.S), old = S && S.players && S.players.length === fresh.players.length ? S : null;
+    const news = (fresh.fx || []).filter(f => f.n > NET.lastFx && f.k !== 'step');
+    NET.lastFx = fresh.fxn || 0;
+    news.slice(-4).forEach((f, k) => setTimeout(() => play(f.k), k * 160));
+    S = fresh; $('ov').hidden = true;
+    if (old && !reduced) {
+      const target = S.players.map(p => p.pos);
+      S.players.forEach((p, i) => p.pos = old.players[i].pos);
+      for (let i = 0; i < S.players.length; i++) {
+        const d = (target[i] - S.players[i].pos + 40) % 40;
+        if (d > 0 && d <= 12 && !S.players[i].jail) for (let k = 0; k < d; k++) { S.players[i].pos = (S.players[i].pos + 1) % 40; play('step'); render(); await sleep(90); }
+        S.players[i].pos = target[i];
+      }
+    }
+    NET.lastJson = JSON.stringify(S);
+    NET.applying = false; busy = false; pendingResolve = null;
+    render();
+    if (!wasMine && myTurn() && !S.over) play('turn');
+  });
+}
+function connect(code) {
+  if (NET.unsub) NET.unsub();
+  NET.code = code; NET.ref = NET.db.doc('games/' + code); NET.lastV = 0; NET.lastJson = ''; NET.lastFx = 0;
+  try { localStorage.setItem('bkk-room', code); } catch (e) {}
+  NET.unsub = NET.ref.onSnapshot(snap => {
+    if (!snap.exists) { NET.err = `ห้อง ${code} ถูกปิดหรือไม่มีอยู่แล้ว`; leaveRoom(); return; }
+    const d = snap.data();
+    NET.meta = {host:d.host, seats:d.seats, rounds:d.rounds, created:d.created};
+    if (d.status === 'lobby') showLobby();
+    else applyRemote(d);
+  }, e => { NET.err = 'การเชื่อมต่อหลุด กรุณาเปิดหน้าใหม่'; render(); });
+}
+function leaveRoom() {
+  if (NET.unsub) NET.unsub();
+  NET.unsub = null; NET.code = null; NET.ref = null; NET.meta = null;
+  try { localStorage.removeItem('bkk-room'); } catch (e) {}
+  newGame(DEFAULT_SLOTS.filter(x => x.on));
+  showSetup('online');
+}
+/* Lobby edits can race (two people joining at once): take a short lease first */
+async function editLobby(fn) {
+  for (let k = 0; k < 10; k++) {
+    const r = await NET.ref.acquire({holder:NET.me, ttlMs:4000});
+    if (r.acquired) {
+      const snap = await NET.ref.get();
+      const next = fn(snap.exists ? clone(snap.data()) : null);
+      if (next) { next.updated = Date.now(); await NET.ref.set(next); }
+      return next;
+    }
+    await sleep(300 + Math.random() * 500);
+  }
+  throw new Error('ห้องไม่ว่าง ลองอีกครั้ง');
+}
+async function initNet() {
+  if (!window.claude || !window.claude.use) return;
+  const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+  NET.db = db; NET.user = user;
+  if (user) { NET.me = await user.id(); try { NET.canWrite = await user.can('data.write'); } catch (e) {} }
+  NET.ready = true;
+  renderOnlinePane();
+}
+
+function newGame(slots, maxRounds = 30, host = null) {
   S = {
-    round:1, maxRounds,
-    players: slots.map((s, i) => ({id:i, name:s.name || ('ผู้เล่น ' + (i + 1)), tok:s.tok, bot:s.bot, color:PCOLORS[i],
+    round:1, maxRounds, host, fx:[], fxn:0,
+    players: slots.map((s, i) => ({id:i, uid:s.uid || null, name:s.name || ('ผู้เล่น ' + (i + 1)), tok:s.tok, bot:s.bot, color:PCOLORS[i],
       money:START_MONEY, pos:0, jail:false, jailTurns:0, cards:0, out:false})),
     owner:{}, houses:{}, mort:{}, turn:0, phase:'roll', doubles:0, dice:[1,1],
     decks:{chance:shuffle([...CHANCE.keys()]), chest:shuffle([...CHEST.keys()])}, di:{chance:0, chest:0},
@@ -304,7 +464,7 @@ function netWorth(p) {
   }, 0);
 }
 
-function build(p, i) { const c = GROUPS[TILES[i].g].h; p.money -= c; S.houses[i] = hcount(i) + 1;
+function build(p, i) { const c = GROUPS[TILES[i].g].h; p.money -= c; S.houses[i] = hcount(i) + 1; fx('build');
   log(`${p.name} สร้าง${hcount(i) === 5 ? 'ห้าง' : 'คอนโด'}ที่ ${TILES[i].name} (${fmt(c)})`); }
 function sell(p, i) { const c = GROUPS[TILES[i].g].h / 2; S.houses[i] = hcount(i) - 1; p.money += c;
   log(`${p.name} ขายสิ่งปลูกสร้างที่ ${TILES[i].name} ได้ ${fmt(c)}`); }
@@ -329,6 +489,7 @@ function raiseFunds(p, need) {
   for (const i of mine) if (p.money < need && canMortgage(p, i)) mortgage(p, i);
 }
 function bankrupt(p, to) {
+  fx('bad');
   log(`💥 ${p.name} ล้มละลาย! ${to ? 'ทรัพย์สินทั้งหมดตกเป็นของ ' + to.name : 'ทรัพย์สินคืนธนาคาร'}`);
   for (const i of ownedBy(p)) {
     S.houses[i] = 0;
@@ -339,7 +500,7 @@ function bankrupt(p, to) {
   if (alive().length <= 1) finish(alive()[0], 'เป็นคนสุดท้ายที่ยังไม่ล้มละลาย');
 }
 function finish(winner, why) {
-  S.over = {id:winner.id, why};
+  S.over = {id:winner.id, why}; fx('win');
   log(`🏆 ${winner.name} คือเศรษฐีบางกอกตัวจริง!`);
 }
 
@@ -360,18 +521,19 @@ async function animDice(d) {
 }
 async function step(p, dir) {
   p.pos = (p.pos + dir + 40) % 40;
-  if (dir > 0 && p.pos === 0) { p.money += SALARY; log(`${p.name} ผ่านจุดเริ่มต้น เงินเดือนออก +${fmt(SALARY)}`); }
+  play('step');
+  if (dir > 0 && p.pos === 0) { p.money += SALARY; fx('coin'); log(`${p.name} ผ่านจุดเริ่มต้น เงินเดือนออก +${fmt(SALARY)}`); }
   render(); await sleep(reduced ? 0 : 110);
 }
 async function moveBy(p, n) { const d = Math.sign(n); for (let k = 0; k < Math.abs(n); k++) await step(p, d); }
 async function moveTo(p, target) { while (p.pos !== target) await step(p, 1); }
-function sendJail(p) { p.pos = JAIL; p.jail = true; p.jailTurns = 0; S.doubles = 0; }
+function sendJail(p) { fx('jail'); p.pos = JAIL; p.jail = true; p.jailTurns = 0; S.doubles = 0; }
 
 async function doRoll() {
   if (busy || S.over || S.phase !== 'roll') return;
   busy = true; S.card = null; render();
   const p = cur(), d = [r6(), r6()], dbl = d[0] === d[1], sum = d[0] + d[1];
-  await animDice(d);
+  fx('dice'); await animDice(d);
   log(`${p.name} ทอยได้ ${d[0]} + ${d[1]} = ${sum}${dbl ? ' (ดับเบิ้ล!)' : ''}`);
   if (p.jail) {
     if (dbl) { p.jail = false; log(`${p.name} ดับเบิ้ล! รถเริ่มขยับ หลุดจากแยกอโศก`); }
@@ -398,15 +560,15 @@ async function landOn(p, sum, opt = {}) {
     if (o == null) {
       if (p.money < t.price) { log(`${p.name} เงินไม่พอซื้อ ${t.name}`); return; }
       const yes = p.bot ? botWantsBuy(p, i) : await ask('buy', {i});
-      if (yes) { p.money -= t.price; S.owner[i] = p.id; log(`${p.name} ซื้อ ${t.name} ราคา ${fmt(t.price)}`); }
+      if (yes) { p.money -= t.price; S.owner[i] = p.id; fx('buy'); log(`${p.name} ซื้อ ${t.name} ราคา ${fmt(t.price)}`); }
       else log(`${p.name} ผ่าน ไม่ซื้อ ${t.name}`);
     } else if (o !== p.id) {
       if (S.mort[i]) { log(`${t.name} ติดจำนองอยู่ ${p.name} ไม่ต้องจ่าย`); return; }
       const owner = S.players[o]; let rent = rentOf(i, sum); if (opt.double) rent *= 2;
       log(`${p.name} จ่ายค่าเช่า ${t.name} ให้ ${owner.name} ${fmt(rent)}`);
-      await pay(p, rent, owner);
+      fx('pay'); await pay(p, rent, owner);
     }
-  } else if (t.type === 'tax') { log(`${p.name} ${t.name} จ่าย ${fmt(t.amt)}`); await pay(p, t.amt, null); }
+  } else if (t.type === 'tax') { fx('pay'); log(`${p.name} ${t.name} จ่าย ${fmt(t.amt)}`); await pay(p, t.amt, null); }
   else if (t.type === 'chance' || t.type === 'chest') await drawCard(p, t.type, sum);
   else if (t.type === 'gojail') { log(`${p.name} ฝนตกรถติด! ไปติดแยกอโศก`); sendJail(p); }
   else if (t.type === 'free') log(`${p.name} หาที่จอดในสยามได้! ปาฏิหาริย์ชัดๆ`);
@@ -415,10 +577,10 @@ async function landOn(p, sum, opt = {}) {
 async function drawCard(p, deck, sum) {
   const list = deck === 'chance' ? CHANCE : CHEST;
   const c = list[S.decks[deck][S.di[deck]++ % list.length]];
-  S.card = {deck, t:c.t}; log(`${p.name} 「${deck === 'chance' ? 'หมอดูทัก' : 'ดราม่าโซเชียล'}」 ${c.t}`);
+  S.card = {deck, t:c.t}; fx('card'); log(`${p.name} 「${deck === 'chance' ? 'หมอดูทัก' : 'ดราม่าโซเชียล'}」 ${c.t}`);
   render(); await sleep(p.bot ? 900 : 500);
   switch (c.k) {
-    case 'money': if (c.v > 0) p.money += c.v; else await pay(p, -c.v, null); break;
+    case 'money': if (c.v > 0) { p.money += c.v; fx('coin'); } else { fx('pay'); await pay(p, -c.v, null); } break;
     case 'each':
       for (const q of alive()) if (q !== p && !p.out) {
         if (c.v > 0) await pay(q, c.v, p); else await pay(p, -c.v, q);
@@ -430,7 +592,7 @@ async function drawCard(p, deck, sum) {
     case 'jail': sendJail(p); break;
     case 'card': p.cards++; break;
     case 'repair': { let cost = 0; for (const i of ownedBy(p)) { const h = hcount(i); cost += h === 5 ? c.v[1] : h * c.v[0]; }
-      log(`${p.name} ค่าซ่อมรวม ${fmt(cost)}`); if (cost) await pay(p, cost, null); break; }
+      if (cost) { log(`${p.name} ค่าซ่อมรวม ${fmt(cost)}`); fx('pay'); await pay(p, cost, null); } else log(`${p.name} ยังไม่มีสิ่งปลูกสร้าง ไม่ต้องจ่าย`); break; }
   }
 }
 
@@ -453,6 +615,7 @@ function endTurn() {
     finish(best, `ทรัพย์สินรวมมากที่สุดเมื่อครบ ${S.maxRounds} รอบ (${fmt(netWorth(best))})`);
   }
   S.turn = n; S.phase = 'roll'; confirmEnd = false;
+  if (!online() && !cur().bot && !S.over) play('turn');
   render();
 }
 function endGameByWorth() {
@@ -473,10 +636,10 @@ function botManage(p) {
   }
 }
 function scheduleBot() {
-  if (botTimer || !S || S.over || busy) return;
+  if (botTimer || !S || S.over || busy || !runsBots() || NET.applying) return;
   if (!cur().bot) return;
   botTimer = setTimeout(async () => {
-    botTimer = null; if (busy || S.over || !cur().bot) return;
+    botTimer = null; if (busy || S.over || !cur().bot || !runsBots()) return;
     const p = cur();
     if (S.phase === 'roll') {
       if (p.jail && p.cards) payJail(true);
@@ -529,9 +692,9 @@ function statusText() {
 }
 function renderPlayers() {
   $('players').innerHTML = S.players.map((p, i) => `
-    <div class="pl${i === S.turn && !S.over ? ' cur' : ''}${p.out ? ' out' : ''}" style="--pc:${p.color}">
+    <div class="pl${i === S.turn && !S.over ? ' cur' : ''}${online() && p.uid === NET.me ? ' me' : ''}${p.out ? ' out' : ''}" style="--pc:${p.color}">
       <span class="tk">${p.tok}</span>
-      <div style="min-width:0"><div class="nm">${esc(p.name)}${p.bot ? ' 🤖' : ''}</div>
+      <div style="min-width:0"><div class="nm">${esc(p.name)}${p.bot ? ' 🤖' : ''}${online() && p.uid === NET.me ? ' (คุณ)' : ''}</div>
         <div class="meta">${TILES[p.pos].name}${p.jail ? ' · ติดอยู่' : ''}${p.cards ? ` · ตั๋วช้าง ×${p.cards}` : ''} · ${ownedBy(p).length} ที่</div></div>
       <span class="money">${fmt(p.money)}</span>
     </div>`).join('');
@@ -542,12 +705,15 @@ function renderActions() {
   if (S.over) {
     h = `<button class="btn main" data-act="setup">เล่นใหม่</button>`;
     t = `${S.players[S.over.id].name} ชนะ: ${S.over.why}`;
-  } else if (S.pending && S.pending.kind === 'buy') {
+  } else if (S.pending && S.pending.kind === 'buy' && myTurn()) {
     const tl = TILES[S.pending.i];
     h = `<button class="btn go" data-act="buy">ซื้อ ${esc(tl.name)} ${fmt(tl.price)}</button><button class="btn" data-act="pass">ไม่ซื้อ</button>`;
     t = `เงินคงเหลือหลังซื้อ ${fmt(p.money - tl.price)}`;
   } else if (p.bot) {
     t = `${p.name} (บอท) กำลังคิด...`;
+  } else if (!myTurn()) {
+    t = S.pending ? `${p.name} กำลังตัดสินใจซื้อ ${TILES[S.pending.i].name}...` : `รอ ${p.name} เล่น...`;
+    if (online() && S.host === NET.me) h = `<button class="btn sm" data-act="takeover">${confirmTake ? 'แน่ใจ? กดอีกครั้ง' : 'หลุดไปแล้ว? ให้บอทเล่นแทน'}</button>`;
   } else if (busy) {
     t = 'กำลังเดิน...';
   } else if (S.phase === 'roll') {
@@ -561,7 +727,9 @@ function renderActions() {
     h = `<button class="btn go" data-act="end">จบตา ➜</button>`;
     t = 'สร้างคอนโดได้เมื่อมีที่ดินครบทั้งสี';
   }
-  if (!S.over) h += `<button class="btn sm" data-act="worth" style="margin-left:auto">${confirmEnd ? 'แน่ใจ? กดอีกครั้ง' : 'จบเกม นับทรัพย์สิน'}</button>`;
+  if (online()) h += `<button class="btn sm" data-act="leave">ออกจากห้อง</button>`;
+  if (NET.err) t += ' · ' + NET.err;
+  if (!S.over && (!online() || S.host === NET.me)) h += `<button class="btn sm" data-act="worth" style="margin-left:auto">${confirmEnd ? 'แน่ใจ? กดอีกครั้ง' : 'จบเกม นับทรัพย์สิน'}</button>`;
   a.innerHTML = h; hint.textContent = t;
 }
 function renderInfo() {
@@ -583,12 +751,11 @@ function renderInfo() {
   box.innerHTML = h;
 }
 function renderProps() {
-  const p = cur(), sec = $('mine');
-  const human = !p.bot && !S.over;
-  sec.hidden = !human;
-  if (!human) return;
+  const p = mySeat(), sec = $('mine');
+  sec.hidden = !p || p.out || !!S.over;
+  if (sec.hidden) return;
   sec.querySelector('h2').textContent = `ทรัพย์สินของ ${p.name}`;
-  const can = !busy && !S.pending;
+  const can = !busy && !S.pending && myTurn() && p === cur();
   const list = ownedBy(p).sort((a, b) => a - b);
   $('props').innerHTML = list.length ? list.map(i => {
     const t = TILES[i], g = t.g ? GROUPS[t.g].c : '#9aa0c8', hc = hcount(i);
@@ -606,46 +773,184 @@ function render() {
   if (!S) { renderBoard(); return; }
   renderBoard(); renderPlayers(); renderActions(); renderInfo(); renderProps();
   $('log').innerHTML = S.log.slice(0, 40).map(m => `<li>${esc(m)}</li>`).join('');
+  $('roomTag').hidden = !online(); $('roomTag').textContent = 'ห้อง ' + (NET.code || '');
+  $('mute').textContent = SFX.on ? '🔊' : '🔇';
   if (S.over) showWinner();
   scheduleBot();
+  netSave();
 }
 
 /* ================= SETUP / OVERLAYS ================= */
-function showSetup() {
-  const ov = $('ov'); ov.hidden = false;
-  ov.innerHTML = `<form class="dlg" id="setup">
+const BOT_NAMES = ['เจ๊หมวย', 'ลุงวิน', 'น้องงูเห่า', 'ป้าข้างบ้าน'];
+let winShown = '', resumeCode = null;
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const tokOptions = sel => TOKENS.map(t => `<option ${t === sel ? 'selected' : ''}>${t}</option>`).join('');
+
+function showSetup(tab = 'local') {
+  const ov = $('ov'); ov.hidden = false; winShown = '';
+  ov.innerHTML = `<div class="dlg" id="setup" data-tab="${tab}">
     <h1>เศรษฐีบางกอก</h1>
-    <p>ซื้อที่ดินทั่วกรุงเทพฯ ตั้งแต่คลองเตยถึงสยามพารากอน เก็บค่าเช่าจนเพื่อนล้มละลาย เล่นด้วยกันบนเครื่องเดียว 2–4 คน หรือเล่นกับบอท</p>
-    ${DEFAULT_SLOTS.map((s, i) => `<div class="slot">
-      <input type="checkbox" id="on${i}" ${s.on ? 'checked' : ''} ${i < 2 ? 'disabled checked' : ''} aria-label="ผู้เล่น ${i + 1}">
-      <input type="text" id="nm${i}" value="${esc(s.name)}" maxlength="14" aria-label="ชื่อ">
-      <select id="tk${i}" aria-label="ตัวเดิน">${TOKENS.map(t => `<option ${t === s.tok ? 'selected' : ''}>${t}</option>`).join('')}</select>
-      <select class="kind" id="bt${i}" aria-label="ประเภท"><option value="0" ${!s.bot ? 'selected' : ''}>คน</option><option value="1" ${s.bot ? 'selected' : ''}>บอท</option></select>
-    </div>`).join('')}
-    <div class="slot"><span></span><label for="rounds">จำนวนรอบ (ครบแล้วนับทรัพย์สิน)</label>
-      <select id="rounds" style="grid-column:span 2"><option value="20">20 รอบ</option><option value="30" selected>30 รอบ</option><option value="50">50 รอบ</option><option value="0">ไม่จำกัด</option></select></div>
-    <ul class="rules">
-      <li>ทุนเริ่มต้น ${fmt(START_MONEY)} ผ่านจุดเริ่มต้นรับเงินเดือน ${fmt(SALARY)}</li>
-      <li>ได้ที่ดินครบสี ค่าเช่า ×2 และสร้างคอนโด 4 หลัง แล้วอัปเป็นห้างได้</li>
-      <li>ตกช่อง "ฝนตก รถติด!" ไปติดแยกอโศก ออกด้วยดับเบิ้ล จ้างวินซิ่ง หรือตั๋วช้าง</li>
-      <li>เงินไม่พอจ่าย ระบบจะขายสิ่งปลูกสร้างและจำนองที่ดินให้อัตโนมัติ ถ้ายังไม่พอคือล้มละลาย</li>
-    </ul>
-    <button class="btn main" type="submit">เริ่มเกม 🎲</button>
-  </form>`;
-  $('setup').addEventListener('submit', e => {
+    <p>ซื้อที่ดินทั่วกรุงเทพฯ ตั้งแต่คลองเตยถึงสยามพารากอน เก็บค่าเช่าจนเพื่อนล้มละลาย</p>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab="local" aria-selected="${tab === 'local'}">เล่นเครื่องเดียว</button>
+      <button type="button" role="tab" data-tab="online" aria-selected="${tab === 'online'}">เล่นออนไลน์</button>
+    </div>
+    <form id="localPane" ${tab === 'local' ? '' : 'hidden'}>
+      ${DEFAULT_SLOTS.map((s, i) => `<div class="slot">
+        <input type="checkbox" id="on${i}" ${s.on || i < 2 ? 'checked' : ''} ${i < 2 ? 'disabled' : ''} aria-label="ผู้เล่น ${i + 1}">
+        <input type="text" id="nm${i}" value="${esc(s.name)}" maxlength="14" aria-label="ชื่อ">
+        <select id="tk${i}" aria-label="ตัวเดิน">${tokOptions(s.tok)}</select>
+        <select class="kind" id="bt${i}" aria-label="ประเภท"><option value="0" ${!s.bot ? 'selected' : ''}>คน</option><option value="1" ${s.bot ? 'selected' : ''}>บอท</option></select>
+      </div>`).join('')}
+      <div class="slot"><span></span><label for="rounds">จำนวนรอบ (ครบแล้วนับทรัพย์สิน)</label>
+        <select id="rounds" style="grid-column:span 2">${roundOptions(30)}</select></div>
+      <ul class="rules">
+        <li>ทุนเริ่มต้น ${fmt(START_MONEY)} ผ่านจุดเริ่มต้นรับเงินเดือน ${fmt(SALARY)}</li>
+        <li>ได้ที่ดินครบสี ค่าเช่า ×2 และสร้างคอนโด 4 หลัง แล้วอัปเป็นห้างได้</li>
+        <li>ตกช่อง "ฝนตก รถติด!" ไปติดแยกอโศก ออกด้วยดับเบิ้ล จ้างวินซิ่ง หรือตั๋วช้าง</li>
+        <li>เงินไม่พอจ่าย ระบบจะขายสิ่งปลูกสร้างและจำนองที่ดินให้อัตโนมัติ ถ้ายังไม่พอคือล้มละลาย</li>
+      </ul>
+      <button class="btn main" type="submit">เริ่มเกม 🎲</button>
+    </form>
+    <div id="onlinePane" ${tab === 'online' ? '' : 'hidden'}></div>
+  </div>`;
+  $('localPane').addEventListener('submit', e => {
     e.preventDefault();
     const slots = DEFAULT_SLOTS.map((_, i) => ({on: $('on' + i).checked, name: $('nm' + i).value.trim(), tok: $('tk' + i).value, bot: $('bt' + i).value === '1'}))
       .filter(s => s.on);
     newGame(slots, +$('rounds').value);
   });
+  renderOnlinePane();
+}
+function roundOptions(v) {
+  return [[20, '20 รอบ'], [30, '30 รอบ'], [50, '50 รอบ'], [0, 'ไม่จำกัด']].map(([n, l]) => `<option value="${n}" ${n === v ? 'selected' : ''}>${l}</option>`).join('');
+}
+function renderOnlinePane() {
+  const pane = $('onlinePane'); if (!pane) return;
+  if (!window.claude || !window.claude.use) { pane.innerHTML = `<p>โหมดออนไลน์ใช้ได้เมื่อเปิดเกมผ่านลิงก์ claude.ai เท่านั้น ไฟล์ที่เปิดจากเครื่องเล่นได้แค่แบบเครื่องเดียว</p>`; return; }
+  if (!NET.ready) { pane.innerHTML = `<p>กำลังเชื่อมต่อ...</p>`; return; }
+  if (!NET.db || !NET.me) { pane.innerHTML = `<p>ต้องลงชื่อเข้าใช้ claude.ai ก่อนจึงจะเล่นออนไลน์ได้</p>`; return; }
+  const last = lsGet('bkk-room');
+  pane.innerHTML = `
+    <div class="row">
+      <label class="field">ชื่อเล่นในเกม<input type="text" id="onm" maxlength="14" value="${esc(lsGet('bkk-name') || 'คุณ')}"></label>
+      <label class="field" style="flex:0 0 90px">ตัวเดิน<select id="otk">${tokOptions(lsGet('bkk-tok') || '🛺')}</select></label>
+    </div>
+    ${NET.canWrite === false ? `<p class="err">บัญชีนี้มีสิทธิ์ดูอย่างเดียว ให้เจ้าของแชร์เกมนี้ให้คุณแบบ Contributor ขึ้นไปก่อน</p>` : ''}
+    <div class="row" style="margin-top:12px"><button class="btn main" data-act="create">สร้างห้องใหม่</button>
+      ${last ? `<button class="btn" data-act="joincode" data-code="${esc(last)}">กลับเข้าห้อง ${esc(last)}</button>` : ''}</div>
+    <hr class="sep">
+    <div class="row">
+      <label class="field">รหัสห้องจากเพื่อน<input type="text" id="ocode" class="code-in" maxlength="4" placeholder="ABCD" autocomplete="off"></label>
+      <button class="btn go" data-act="join">เข้าห้อง</button>
+    </div>
+    <div class="h2row" style="margin-top:16px"><h2>ห้องที่รอผู้เล่น</h2><button class="iconbtn" data-act="rooms" aria-label="รีเฟรช">↻</button></div>
+    <div class="rooms" id="rooms"><p class="hint">กด ↻ เพื่อดูห้องที่เปิดอยู่</p></div>
+    <p class="err" id="oerr">${esc(NET.err)}</p>`;
+  listRooms();
+}
+async function listRooms() {
+  const box = $('rooms'); if (!box || !NET.db) return;
+  try {
+    const q = await NET.db.collection('games').where('status', '==', 'lobby').get();
+    const rooms = q.docs.map(d => ({code:d.id, ...d.data()})).filter(r => Date.now() - (r.updated || 0) < 3 * 3600e3 && (r.seats || []).length < 4);
+    box.innerHTML = rooms.length ? rooms.map(r => `<div class="room"><span>${esc(r.code)} · ${(r.seats || []).map(x => x.tok).join(' ')} (${r.seats.length}/4)</span>
+      <button class="btn sm go" data-act="joincode" data-code="${esc(r.code)}">เข้าร่วม</button></div>`).join('') : '<p class="hint">ยังไม่มีห้องที่รอ สร้างห้องใหม่แล้วส่งรหัสให้เพื่อนได้เลย</p>';
+  } catch (e) { box.innerHTML = '<p class="hint">โหลดรายชื่อห้องไม่ได้</p>'; }
+}
+function onlineProfile() {
+  const name = ($('onm') && $('onm').value.trim()) || 'ผู้เล่น', tok = ($('otk') && $('otk').value) || '🛺';
+  lsSet('bkk-name', name); lsSet('bkk-tok', tok);
+  return {uid:NET.me, name, tok, bot:false};
+}
+function oerr(m) { NET.err = m; const el = $('oerr') || $('lerr'); if (el) el.textContent = m; }
+async function createRoom() {
+  const me = onlineProfile();
+  try {
+    let code;
+    for (let k = 0; k < 6; k++) { code = newCode(); if (!(await NET.db.doc('games/' + code).get()).exists) break; }
+    await NET.db.doc('games/' + code).set({status:'lobby', host:NET.me, seats:[me], rounds:30, created:Date.now(), updated:Date.now(), v:0});
+    NET.err = ''; connect(code);
+  } catch (e) { oerr('สร้างห้องไม่สำเร็จ: ' + (e.code === 'invalid_argument' ? 'ไม่มีสิทธิ์เขียน' : e.message || e)); }
+}
+async function joinRoom(code) {
+  code = (code || '').toUpperCase().trim();
+  if (!/^[A-Z0-9]{4}$/.test(code)) { oerr('รหัสห้องต้องมี 4 ตัวอักษร'); return; }
+  const me = onlineProfile();
+  try {
+    const snap = await NET.db.doc('games/' + code).get();
+    if (!snap.exists) { oerr('ไม่พบห้อง ' + code); return; }
+    const d = snap.data();
+    if (d.status === 'lobby') {
+      NET.ref = NET.db.doc('games/' + code);
+      await editLobby(x => {
+        if (!x || x.status !== 'lobby') return null;
+        const mine = x.seats.find(s => s.uid === NET.me);
+        if (mine) { mine.name = me.name; mine.tok = me.tok; return x; }
+        if (x.seats.length >= 4) throw new Error('ห้องเต็มแล้ว');
+        if (x.seats.some(s => s.tok === me.tok)) me.tok = TOKENS.find(t => !x.seats.some(s => s.tok === t));
+        x.seats.push(me); return x;
+      });
+    }
+    NET.err = ''; connect(code);   // a game in progress opens as a seat you hold, or to watch
+  } catch (e) { oerr(e.message || String(e)); }
+}
+function showLobby() {
+  const m = NET.meta, ov = $('ov'), host = m.host === NET.me;
+  ov.hidden = false;
+  ov.innerHTML = `<div class="dlg" id="lobby">
+    <h1>ห้องรอเล่น</h1>
+    <p>ส่งรหัสนี้ให้เพื่อน แล้วให้เพื่อนเปิดลิงก์เกมนี้ กด "เล่นออนไลน์" และใส่รหัส</p>
+    <div class="row" style="align-items:center"><div class="code" id="lcode">${esc(NET.code)}</div><button class="btn sm" data-act="copy">คัดลอกรหัส</button></div>
+    <div class="seats">${m.seats.map((s, i) => `<div class="seat" style="--pc:${PCOLORS[i]}"><span class="tk">${s.tok}</span>
+      <span>${esc(s.name)}${s.bot ? ' 🤖' : ''}${s.uid && s.uid === m.host ? ' 👑' : ''}${s.uid === NET.me ? ' (คุณ)' : ''}</span>
+      ${host && s.uid !== NET.me ? `<button class="btn sm" data-act="kick" data-i="${i}">เอาออก</button>` : '<span></span>'}</div>`).join('')}</div>
+    ${host ? `<div class="row">
+        <button class="btn" data-act="addbot" ${m.seats.length >= 4 ? 'disabled' : ''}>+ เพิ่มบอท</button>
+        <label class="field">จำนวนรอบ<select id="lrounds">${roundOptions(m.rounds)}</select></label>
+      </div>
+      <div class="row" style="margin-top:12px"><button class="btn main" data-act="startonline" ${m.seats.length < 2 ? 'disabled' : ''}>เริ่มเกม 🎲</button>
+        <button class="btn" data-act="leave">ปิดห้อง</button></div>`
+    : `<p class="hint">รอเจ้าของห้องกดเริ่มเกม...</p><button class="btn" data-act="leave">ออกจากห้อง</button>`}
+    <p class="err" id="lerr">${esc(NET.err)}</p>
+  </div>`;
+}
+async function lobbyAction(act, b) {
+  try {
+    if (act === 'addbot') await editLobby(x => {
+      if (x.seats.length >= 4) return null;
+      const name = BOT_NAMES.find(n => !x.seats.some(s => s.name === n)) || 'บอท';
+      x.seats.push({uid:null, name, tok:TOKENS.find(t => !x.seats.some(s => s.tok === t)), bot:true}); return x;
+    });
+    if (act === 'kick') await editLobby(x => { x.seats.splice(+b.dataset.i, 1); return x; });
+    if (act === 'rounds') await editLobby(x => { x.rounds = +$('lrounds').value; return x; });
+    if (act === 'startonline') await editLobby(x => {
+      if (!x || x.status !== 'lobby' || x.seats.length < 2) return null;
+      NET.lastV = 1;
+      newGame(x.seats, x.rounds, NET.me);
+      NET.lastJson = JSON.stringify(S); NET.lastFx = S.fxn;
+      return {...x, status:'playing', S:clone(S), v:1};
+    });
+  } catch (e) { oerr(e.message || String(e)); }
+}
+async function leave() {
+  const code = NET.code, wasHost = NET.meta && NET.meta.host === NET.me, lobby = $('lobby');
+  if (NET.unsub) { NET.unsub(); NET.unsub = null; }
+  NET.err = '';
+  try {
+    if (lobby && wasHost) await NET.ref.delete();
+    else if (lobby) await editLobby(x => { if (!x) return null; x.seats = x.seats.filter(s => s.uid !== NET.me); return x; });
+  } catch (e) {}
+  if (code) leaveRoom();
 }
 function showWinner() {
-  const ov = $('ov'), w = S.players[S.over.id];
-  if (S.over.shown) return;
-  S.over.shown = true; ov.hidden = false;
+  const ov = $('ov'), w = S.players[S.over.id], key = S.over.id + S.over.why;
+  if (winShown === key) return;
+  winShown = key; ov.hidden = false;
   ov.innerHTML = `<div class="dlg win"><div class="big">${w.tok}</div><h1>${esc(w.name)} คือเศรษฐีบางกอก!</h1>
     <p>ชนะเพราะ${esc(S.over.why)}</p>
-    <button class="btn main" data-act="setup">เล่นใหม่</button> <button class="btn" data-act="close">ดูกระดาน</button></div>`;
+    <button class="btn main" data-act="${online() ? 'leave' : 'setup'}">เล่นใหม่</button> <button class="btn" data-act="close">ดูกระดาน</button></div>`;
 }
 
 /* ================= EVENTS ================= */
@@ -653,18 +958,38 @@ document.addEventListener('click', e => {
   const tile = e.target.closest('.tile');
   if (tile) { sel = +tile.dataset.i === sel ? null : +tile.dataset.i; render(); return; }
   const b = e.target.closest('button'); if (!b || b.disabled) return;
+  audio();   // unlock sound on the first tap
   const act = b.dataset.act, m = b.dataset.m;
+  if (b.dataset.tab) { showSetup(b.dataset.tab); return; }
+  if (act === 'mute') { SFX.on = !SFX.on; lsSet('bkk-mute', SFX.on ? '0' : '1'); b.textContent = SFX.on ? '🔊' : '🔇'; play('coin'); return; }
   if (act === 'setup') { showSetup(); return; }
   if (act === 'close') { $('ov').hidden = true; return; }
+  if (act === 'create') { createRoom(); return; }
+  if (act === 'join') { joinRoom($('ocode').value); return; }
+  if (act === 'joincode') { joinRoom(b.dataset.code); return; }
+  if (act === 'rooms') { listRooms(); return; }
+  if (act === 'leave') { leave(); return; }
+  if (act === 'copy') {
+    const done = () => { b.textContent = 'คัดลอกแล้ว'; };
+    navigator.clipboard ? navigator.clipboard.writeText(NET.code).then(done, () => getSelection().selectAllChildren($('lcode'))) : getSelection().selectAllChildren($('lcode'));
+    return;
+  }
+  if (['addbot', 'kick', 'startonline'].includes(act)) { lobbyAction(act, b); return; }
   if (!S) return;
   if (act !== 'worth') confirmEnd = false;
+  if (act !== 'takeover') confirmTake = false;
+  if (act === 'worth') { endGameByWorth(); return; }
+  if (act === 'takeover') {
+    if (!confirmTake) { confirmTake = true; render(); return; }
+    confirmTake = false; cur().bot = true; log(`${cur().name} หลุดจากเกม ให้บอทเล่นแทน`); render(); return;
+  }
+  if (!myTurn()) return;
   if (act === 'roll') doRoll();
   else if (act === 'buy') answer(true);
   else if (act === 'pass') answer(false);
   else if (act === 'end') endTurn();
   else if (act === 'fine') payJail(false);
   else if (act === 'card') payJail(true);
-  else if (act === 'worth') endGameByWorth();
   else if (m && !busy && !S.pending) {
     const p = cur(), i = +b.dataset.i;
     if (m === 'build' && canBuild(p, i)) build(p, i);
@@ -674,23 +999,29 @@ document.addEventListener('click', e => {
     render();
   }
 });
+document.addEventListener('change', e => { if (e.target.id === 'lrounds') lobbyAction('rounds'); });
 document.addEventListener('keydown', e => {
   const tile = e.target.closest && e.target.closest('.tile');
   if (tile && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tile.click(); }
+  if (e.target.id === 'ocode' && e.key === 'Enter') joinRoom(e.target.value);
 });
 
 /* Keep a running game across live page updates */
-window.claude?.hot?.snapshot?.(() => S ? {S: JSON.parse(JSON.stringify({...S, pending:null}))} : {});
+window.claude?.hot?.snapshot?.(() => NET.code ? {code:NET.code} : S ? {S: JSON.parse(JSON.stringify({...S, pending:null}))} : {});
 function start(data) {
-  if (data && data.S) {
+  if (data && data.code) {
+    resumeCode = data.code;
+    newGame(DEFAULT_SLOTS.filter(s => s.on));
+  } else if (data && data.S) {
     S = data.S;
-    if (S.phase === 'roll' || S.phase === 'end') {} else S.phase = 'end';
+    if (S.phase !== 'roll' && S.phase !== 'end') S.phase = 'end';
     render();
   } else {
     // Preview game behind the setup dialog
     newGame(DEFAULT_SLOTS.filter(s => s.on));
     showSetup();
   }
+  initNet().then(() => { if (resumeCode && NET.db && NET.me) connect(resumeCode); });
 }
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
 </script>
