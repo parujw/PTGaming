@@ -94,7 +94,58 @@ button:focus-visible,[role=button]:focus-visible,input:focus-visible,select:focu
 .rent td{padding:2px 0;border-bottom:1px solid var(--line)}
 .rent td:last-child{text-align:right}
 .rent tr.on td{color:var(--gold);font-weight:600}
-.props{display:grid;gap:6px;max-height:260px;overflow:auto}
+.props{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;max-height:420px;overflow:auto}
+.mdeed{display:grid;gap:4px;align-content:start;background:var(--tile);color:var(--tile-ink);border-radius:8px;padding:0 0 8px;overflow:hidden;font-size:12px;min-width:0}
+.mdeed.mortd{background:repeating-linear-gradient(45deg,#e4e3ef 0 6px,#f6f5fc 6px 12px)}
+.mdh{border:0;background:var(--g,#cfd0e6);color:#fff;font-family:var(--display);font-weight:600;font-size:13px;padding:6px 8px;text-align:left;text-shadow:0 1px 0 rgba(0,0,0,.35)}
+.mdh.plain{background:#cfd0e6;color:var(--tile-ink);text-shadow:none}
+.mds{padding:0 8px;line-height:1.3}
+.mdeed .why{padding:0 8px;color:#9a5b00}
+.mdeed .bt{display:flex;flex-wrap:wrap;gap:4px;padding:0 6px}
+.mdeed .btn.sm{background:#e6e5f2;color:var(--tile-ink);font-size:12px;padding:4px 7px}
+.mdeed .btn.sm:not(:disabled){background:var(--panel-2);color:var(--ink)}
+.tdeed{position:relative;background:#fffdf6;color:var(--tile-ink);border-radius:8px;padding:8px;box-shadow:0 2px 0 rgba(0,0,0,.25);max-width:320px;margin-top:6px}
+.tdeed.mortd{background:repeating-linear-gradient(45deg,#ece9f2 0 8px,#fffdf6 8px 16px)}
+.td-h{background:var(--g);color:#fff;text-align:center;border:2px solid var(--tile-ink);padding:6px 4px 8px;display:grid;text-shadow:0 1px 0 rgba(0,0,0,.35)}
+.td-h small{font-size:10px;letter-spacing:.2em;opacity:.9}
+.td-h b{font-family:var(--display);font-size:18px;line-height:1.2}
+.td-h.plain{background:transparent;color:var(--tile-ink);border:0;text-shadow:none}
+.td-ic{font-size:30px;line-height:1}
+.tdeed table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;margin-top:6px}
+.tdeed td{padding:2px 4px}
+.tdeed td:last-child{text-align:right}
+.tdeed tr.on td{background:#ffe9a8;font-weight:600}
+.td-f{display:grid;gap:2px;text-align:center;font-size:11px;border-top:1px solid #d9d6e6;margin-top:6px;padding-top:6px;color:#4a4a63}
+.td-p{text-align:center;font-family:var(--display);font-size:13px;margin-top:4px}
+.td-stamp{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);border:3px solid #c8102e;color:#c8102e;font-family:var(--display);font-size:22px;padding:2px 14px;border-radius:8px;background:rgba(255,253,246,.85)}
+/* chance / community chest decks */
+.piles{display:flex;gap:2cqw;justify-content:center}
+.pile{width:15cqw;aspect-ratio:1.45;position:relative;transform:rotate(-4deg);font-size:1.15cqw}
+.pile.chest{transform:rotate(4deg)}
+.pile>*{position:absolute;inset:0;border-radius:.8cqw;box-shadow:.4cqw .4cqw 0 rgba(0,0,0,.35),.8cqw .8cqw 0 rgba(255,255,255,.15)}
+.mc-back{display:grid;place-content:center;justify-items:center;gap:.4cqw;color:#fff;font-family:var(--display);text-align:center;border:.35cqw solid #fff}
+.mc-back.chance{background:repeating-linear-gradient(135deg,#f0a500 0 1.2cqw,#e69400 1.2cqw 2.4cqw)}
+.mc-back.chest{background:repeating-linear-gradient(135deg,#e3407f 0 1.2cqw,#d03070 1.2cqw 2.4cqw)}
+.mc-back span{font-size:2.6em;line-height:1}
+.mc-back b{font-size:1.25em;text-shadow:0 1px 0 rgba(0,0,0,.3)}
+.mc-front{display:grid;align-content:start;justify-items:center;gap:.3em;background:#fffdf6;color:var(--tile-ink);border:.35cqw solid var(--dc);padding:.5em .6em;text-align:center;overflow:hidden}
+.mc-front.chance{--dc:#e69400}.mc-front.chest{--dc:#d03070}
+.mc-h{font-family:var(--display);font-size:.95em;color:var(--dc);letter-spacing:.06em}
+.mc-ic{font-size:1.9em;line-height:1}
+.mc-t{font-size:.85em;line-height:1.3}
+.mc-e{font-family:var(--display);font-size:.95em;color:var(--dc);margin-top:auto}
+.pile.last .mc-t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mcflip{width:min(52%,380px);aspect-ratio:1.45;position:relative;perspective:1200px;font-size:clamp(11px,2.2cqw,20px)}
+.mc-inner{position:absolute;inset:0;transform-style:preserve-3d;animation:flipc .7s .15s cubic-bezier(.3,1.3,.5,1) both}
+.mc-inner>*{position:absolute;inset:0;border-radius:1.2cqw;backface-visibility:hidden;box-shadow:0 1.6cqw 5cqw rgba(0,0,0,.55)}
+.mc-inner .mc-back{transform:rotateY(180deg);font-size:1.4em}
+.mc-inner .mc-front{padding:1em 1.2em;gap:.45em}
+.mc-inner .mc-ic{font-size:2.6em}
+.mc-inner .mc-t{font-size:1.05em}
+.mc-inner .mc-e{font-size:1.1em}
+@keyframes flipc{from{transform:translateY(18cqw) rotateY(180deg) scale(.5)}60%{transform:translateY(0) rotateY(-12deg) scale(1.04)}to{transform:none}}
+.mc-who{position:absolute;left:50%;top:100%;transform:translate(-50%,1.2cqw);white-space:nowrap;background:var(--panel);color:var(--ink);border-radius:999px;padding:.4em 1em;font-size:.8em}
+body.lowmo .mc-inner{animation:none}
 .pr{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13px}
 .pr .sw{width:10px;height:24px;border-radius:3px;background:var(--g)}
 .pr .bt{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
@@ -291,6 +342,25 @@ const TILES = [
   P('สยามพารากอน','dblue',4000,[500,2000,6000,14000,17000,20000],'ห้างที่มีทั้งรถซูเปอร์คาร์ และพิพิธภัณฑ์สัตว์น้ำ'),
 ];
 const RAIL_RENT = [250,500,1000,2000];
+/* What each card does, in one line, printed on the card face like a real Monopoly card */
+const DECKS = {chance:{name:'หมอดูทัก', ic:'🔮', list:() => CHANCE}, chest:{name:'ดราม่าโซเชียล', ic:'📱', list:() => CHEST}};
+function cardEffect(c) {
+  switch (c.k) {
+    case 'money': return (c.v > 0 ? 'รับ ' : 'จ่าย ') + fmt(Math.abs(c.v));
+    case 'each': return c.v > 0 ? `ทุกคนจ่ายให้คุณคนละ ${fmt(c.v)}` : `จ่ายให้ทุกคนคนละ ${fmt(-c.v)}`;
+    case 'to': return c.v === 0 ? 'ไปจุดเริ่มต้น · รับเงินเดือน ฿2,000' : `ไปที่ ${TILES[c.v].name} · ผ่านจุดเริ่มต้นรับ ฿2,000`;
+    case 'back': return `ถอยหลัง ${c.v} ช่อง`;
+    case 'rail': return 'ไปสถานีที่ใกล้ที่สุด · มีเจ้าของจ่าย ×2';
+    case 'util': return 'ไปสาธารณูปโภคที่ใกล้ที่สุด · มีเจ้าของจ่ายแต้ม × 100';
+    case 'jail': return 'ไปติดแยกอโศกทันที · ไม่ผ่านจุดเริ่มต้น';
+    case 'card': return 'เก็บการ์ดนี้ไว้ · ใช้ออกจากแยกอโศกได้ 1 ครั้ง';
+    case 'repair': return `คอนโดหลังละ ${fmt(c.v[0])} · ห้างละ ${fmt(c.v[1])}`;
+  }
+  return '';
+}
+const cardIcon = c => ({money:c.v > 0 ? '💰' : '💸', each:c.v > 0 ? '🎂' : '🙇', to:'🧭', back:'👻', rail:'🚝', util:'💡', jail:'🚦', card:'🐘', repair:'🔧'}[c.k] || '🃏');
+const heldCards = () => S.players.flatMap(p => p.jc || []);
+
 
 /* Cards: k = kind, v = value */
 const CHANCE = [
@@ -310,6 +380,8 @@ const CHANCE = [
   {t:'โดนแก๊งคอลเซ็นเตอร์หลอกว่าพัสดุติดศุลกากร จ่าย ฿1,500', k:'money', v:-1500},
   {t:'เงินเดือนออก! วิ่งไปจุดเริ่มต้น', k:'to', v:0},
   {t:'หมูเด้งเด้งใส่ ถ่ายคลิปไวรัล ยอดวิวพุ่ง รับ ฿1,000', k:'money', v:1000},
+  {t:'ไฟดับทั้งซอย! วิ่งไปการไฟฟ้าหรือการประปาที่ใกล้ที่สุด ถ้ามีเจ้าของ ทอยเต๋าแล้วจ่ายแต้ม × 100', k:'util'},
+  {t:'รถติดหนักมาก หนีไปขึ้นรถไฟฟ้า/เรือที่ใกล้ที่สุด ถ้ามีเจ้าของ จ่ายค่าโดยสาร 2 เท่า', k:'rail'},
 ];
 const CHEST = [
   {t:'ทัวร์ลง! โพสต์ไม่คิด ต้องขอโทษทุกคน จ่ายคนละ ฿500', k:'each', v:-500},
@@ -562,7 +634,7 @@ function el(cls, html) { const e = document.createElement('div'); e.className = 
 
 /* One thing at a time in the middle of the board; a big scene jumps the queue */
 function stage(item) {
-  if (item.tier === 'big') { UI.stageQ = [item]; if (UI.stageCur) endStage(); else pump(); return; }
+  if (item.tier === 'big' || item.tier === 'card') { UI.stageQ = [item]; if (UI.stageCur) endStage(); else pump(); return; }
   if (UI.stageQ.length >= 2) return;
   UI.stageQ.push(item);
   if (!UI.stageCur) pump();
@@ -610,6 +682,40 @@ function deedEl(d, n, kind) {
     <span class="stamp">${kind === 'tax' ? 'ชำระแล้ว' : (p ? p.tok + ' ' + esc(p.name) : '')}</span>
     ${m ? `<span class="dl">${PACKS[m.pack].em} ${esc(fill(m.t, {who:d.p, tile:d.i}))}</span>` : ''}</div>`);
   return e;
+}
+function cardFace(deck, ci) {
+  const D = DECKS[deck], c = D.list()[ci]; if (!c) return '';
+  return `<div class="mc-front ${deck}"><span class="mc-h">${D.ic} ${D.name}</span><span class="mc-ic">${cardIcon(c)}</span>
+    <span class="mc-t">${esc(c.t)}</span><b class="mc-e">${esc(cardEffect(c))}</b></div>`;
+}
+function cardEl(d) {
+  const D = DECKS[d.deck], p = pl(d.p);
+  return el('mwrap', `<div class="mcflip"><div class="mc-inner">
+    <div class="mc-back ${d.deck}"><span>${D.ic}</span><b>${D.name}</b></div>${cardFace(d.deck, d.ci)}</div>
+    ${p ? `<span class="mc-who">${p.tok} ${esc(p.name)} จั่วได้</span>` : ''}</div>`);
+}
+/* Monopoly-style title deed: colour band, rent ladder, building cost, mortgage value */
+function deedHTML(i, compact) {
+  const t = TILES[i], o = S.owner[i], hc = hcount(i), mort = S.mort[i];
+  let head, rows;
+  if (t.type === 'prop') {
+    const full = o != null && hasGroup(S.players[o], t.g);
+    head = `<div class="td-h" style="--g:${GROUPS[t.g].c}"><small>โฉนดที่ดิน</small><b>${esc(t.name)}</b></div>`;
+    rows = [[`ค่าเช่า${full ? ' (ครบสี ×2)' : ''}`, t.rent[0] * (full ? 2 : 1), o != null && !hc],
+      ...[1, 2, 3, 4].map(k => [`คอนโด ${k} หลัง`, t.rent[k], hc === k]), ['ห้างสรรพสินค้า', t.rent[5], hc === 5]];
+    rows = rows.map(r => `<tr class="${r[2] ? 'on' : ''}"><td>${r[0]}</td><td>${fmt(r[1])}</td></tr>`).join('');
+    rows += `</table><div class="td-f"><span>ค่าสร้างคอนโด ${fmt(GROUPS[t.g].h)} · ห้าง ${fmt(GROUPS[t.g].h)} + คอนโด 4 หลัง</span>
+      <span>มูลค่าจำนอง ${fmt(t.price / 2)}</span><span>ครบสีแล้วค่าเช่าที่ดินเปล่า × 2</span></div><table>`;
+  } else {
+    head = `<div class="td-h plain"><span class="td-ic">${t.ic}</span><b>${esc(t.name)}</b></div>`;
+    const n = o != null ? TILES.filter((x, j) => x.type === t.type && S.owner[j] === o).length : 0;
+    rows = (t.type === 'rail' ? RAIL_RENT.map((v, k) => [`มี ${k + 1} สาย`, fmt(v), n === k + 1])
+      : [['มี 1 แห่ง', 'แต้มเต๋า × 40', n === 1], ['มีครบ 2 แห่ง', 'แต้มเต๋า × 100', n === 2]])
+      .map(r => `<tr class="${r[2] ? 'on' : ''}"><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+    rows += `</table><div class="td-f"><span>มูลค่าจำนอง ${fmt(t.price / 2)}</span></div><table>`;
+  }
+  return `<div class="tdeed${mort ? ' mortd' : ''}">${head}<table>${rows}</table>
+    <div class="td-p">ราคา ${fmt(t.price)}</div>${mort ? '<span class="td-stamp">จำนอง</span>' : ''}</div>`;
 }
 function sceneEl(ev, m, c) {
   const p = pl(c.who) || {tok:'', name:''};
@@ -659,7 +765,8 @@ function showMeme(d, n) {
 function runFx(f) {
   const d = f.d || {};
   switch (f.k) {
-    case 'dice': case 'card': case 'jail': play(f.k); break;
+    case 'dice': case 'jail': play(f.k); break;
+    case 'card': play('card'); if (d.deck) stage({tier:'card', dur:2600, el:() => cardEl(d)}); break;
     case 'land': markGlow([d.i], null, 900); break;
     case 'coin': play('coin'); moneyFx(d.p, d.amt); break;
     case 'pay':
@@ -937,8 +1044,8 @@ function bankrupt(p, to) {
     S.houses[i] = 0;
     if (to) S.owner[i] = to.id; else { delete S.owner[i]; S.mort[i] = false; }
   }
-  if (to) { to.money += Math.max(0, p.money); to.cards += p.cards; }
-  p.money = 0; p.cards = 0; p.out = true; p.jail = false;
+  if (to) { to.money += Math.max(0, p.money); to.cards += p.cards; to.jc = [...(to.jc || []), ...(p.jc || [])]; }
+  p.money = 0; p.cards = 0; p.jc = []; p.out = true; p.jail = false;
   if (alive().length <= 1) finish(alive()[0], 'เป็นคนสุดท้ายที่ยังไม่ล้มละลาย');
 }
 function finish(winner, why) {
@@ -1014,7 +1121,7 @@ async function landOn(p, sum, opt = {}) {
       else log(`${p.name} ผ่าน ไม่ซื้อ ${t.name}`);
     } else if (o !== p.id) {
       if (S.mort[i]) { log(`${t.name} ติดจำนองอยู่ ${p.name} ไม่ต้องจ่าย`); return; }
-      const owner = S.players[o]; let rent = rentOf(i, sum); if (opt.double) rent *= 2;
+      const owner = S.players[o]; let rent = opt.util10 && t.type === 'util' ? sum * 100 : rentOf(i, sum); if (opt.double) rent *= 2;
       log(`${p.name} จ่ายค่าเช่า ${t.name} ให้ ${owner.name} ${fmt(rent)}`);
       const big = rent >= 2000 || rent >= p.money * .4;
       await pay(p, rent, owner, {i, big});
@@ -1027,10 +1134,16 @@ async function landOn(p, sum, opt = {}) {
 }
 
 async function drawCard(p, deck, sum) {
-  const list = deck === 'chance' ? CHANCE : CHEST;
-  const c = list[S.decks[deck][S.di[deck]++ % list.length]];
-  S.card = {deck, t:c.t}; fx('card'); log(`${p.name} 「${deck === 'chance' ? 'หมอดูทัก' : 'ดราม่าโซเชียล'}」 ${c.t}`);
-  render(); await sleep(spd(p.bot ? 900 : 500));
+  const list = DECKS[deck].list();
+  if (S.decks[deck].length !== list.length) S.decks[deck] = shuffle([...list.keys()]);   // deck grew (older save)
+  let ci, c, guard = 0;
+  do { ci = S.decks[deck][S.di[deck]++ % list.length]; c = list[ci]; }
+  while (c.k === 'card' && heldCards().includes(deck) && ++guard < list.length);
+  if (S.di[deck] % list.length === 0) log(`สับการ์ด${DECKS[deck].name}ใหม่`);
+  S.card = {deck, ci};
+  fx('card', {deck, ci, p:p.id});
+  log(`${p.name} 「${DECKS[deck].name}」 ${c.t}`);
+  render(); await sleep(spd(1500));
   switch (c.k) {
     case 'money': if (c.v > 0) { p.money += c.v; fx('coin', {p:p.id, amt:c.v}); } else await pay(p, -c.v, null); break;
     case 'each':
@@ -1041,8 +1154,15 @@ async function drawCard(p, deck, sum) {
     case 'back': await moveBy(p, -c.v); await landOn(p, sum); break;
     case 'rail': { let k = p.pos; do k = (k + 1) % 40; while (TILES[k].type !== 'rail');
       await moveTo(p, k); await landOn(p, sum, {double:true}); break; }
+    case 'util': { let k = p.pos; do k = (k + 1) % 40; while (TILES[k].type !== 'util');
+      await moveTo(p, k);
+      if (S.owner[k] != null && S.owner[k] !== p.id && !S.mort[k]) {
+        const d = [r6(), r6()]; S.dice = d; fx('dice'); log(`${p.name} ทอยเต๋าคิดค่าไฟ ได้ ${d[0] + d[1]}`);
+        await landOn(p, d[0] + d[1], {util10:true});
+      } else await landOn(p, sum);
+      break; }
     case 'jail': sendJail(p); break;
-    case 'card': p.cards++; break;
+    case 'card': p.cards++; p.jc = [...(p.jc || []), deck]; break;
     case 'repair': { let cost = 0; for (const i of ownedBy(p)) { const h = hcount(i); cost += h === 5 ? c.v[1] : h * c.v[0]; }
       if (cost) { log(`${p.name} ค่าซ่อมรวม ${fmt(cost)}`); await pay(p, cost, null); } else log(`${p.name} ยังไม่มีสิ่งปลูกสร้าง ไม่ต้องจ่าย`); break; }
   }
@@ -1051,7 +1171,7 @@ async function drawCard(p, deck, sum) {
 function payJail(useCard) {
   const p = cur(); if (!p.jail || busy) return;
   if (useCard && !p.cards) return;
-  if (useCard) { p.cards--; log(`${p.name} ยื่นตั๋วช้าง ออกจากแยกอโศกสบายๆ`); }
+  if (useCard) { p.cards--; const d = (p.jc || []).pop(); log(`ตั๋วช้างกลับเข้ากอง${d ? DECKS[d].name : ''}`); log(`${p.name} ยื่นตั๋วช้าง ออกจากแยกอโศกสบายๆ`); }
   else { p.money -= JAIL_FINE; fx('pay', {from:p.id, amt:JAIL_FINE}); log(`${p.name} จ้างวินซิ่งฝ่ารถติดออกมา ${fmt(JAIL_FINE)}`); }
   p.jail = false; p.jailTurns = 0; render();
 }
@@ -1133,8 +1253,8 @@ function renderBoard() {
     <h1 class="logo"><span class="l1">เศรษฐีบางกอก</span><span class="l2">ฉบับดราม่า รถติด ทัวร์ลง</span></h1>
     <div class="dice"><div class="die">${S ? S.dice[0] : 1}</div><div class="die">${S ? S.dice[1] : 1}</div></div>
     <div class="status" id="status">${S ? statusText() : ''}</div>
-    <div class="card" ${card ? '' : 'hidden'} style="--cc:${card && card.deck === 'chance' ? 'var(--gold)' : 'var(--taxi)'}">
-      <span class="deck">${card ? (card.deck === 'chance' ? '🔮 หมอดูทัก' : '📱 ดราม่าโซเชียล') : ''}</span>${card ? esc(card.t) : ''}</div>
+    <div class="piles">${['chance', 'chest'].map(k => `<div class="pile ${k}${card && card.deck === k ? ' last' : ''}">
+      ${card && card.deck === k && card.ci != null ? cardFace(k, card.ci) : `<div class="mc-back ${k}"><span>${DECKS[k].ic}</span><b>${DECKS[k].name}</b></div>`}</div>`).join('')}</div>
   </div>`;
   $('board').innerHTML = h;
 }
@@ -1205,15 +1325,8 @@ function renderInfo() {
   const t = TILES[i], o = S.owner[i];
   let h = `<p class="ti">${t.ic || ''} ${esc(t.name)}</p><p class="sub">${esc(t.sub || '')}</p>`;
   if (isOwnable(t)) {
-    h += `<p class="sub">ราคา ${fmt(t.price)} · ${o != null ? 'เจ้าของ: ' + esc(S.players[o].tok + ' ' + S.players[o].name) + (S.mort[i] ? ' (จำนอง)' : '') : 'ยังไม่มีเจ้าของ'}</p>`;
-    let rows = [];
-    if (t.type === 'prop') {
-      const hc = hcount(i);
-      rows = [['ค่าเช่าเปล่า (ครบสี ×2)', t.rent[0]], ...[1, 2, 3, 4].map(k => [`คอนโด ${k} หลัง`, t.rent[k]]), ['ห้างสรรพสินค้า', t.rent[5]], ['ค่าสร้างต่อหลัง', GROUPS[t.g].h]]
-        .map((r, k) => `<tr class="${o != null && k === hc && k < 6 ? 'on' : ''}"><td>${r[0]}</td><td>${fmt(r[1])}</td></tr>`);
-    } else if (t.type === 'rail') rows = RAIL_RENT.map((v, k) => `<tr><td>มี ${k + 1} สาย</td><td>${fmt(v)}</td></tr>`);
-    else rows = ['<tr><td>มี 1 แห่ง</td><td>แต้มเต๋า × 40</td></tr>', '<tr><td>มีครบ 2 แห่ง</td><td>แต้มเต๋า × 100</td></tr>'];
-    h += `<table class="rent">${rows.join('')}</table>`;
+    h += `<p class="sub">${o != null ? 'เจ้าของ: ' + esc(S.players[o].tok + ' ' + S.players[o].name) + (S.mort[i] ? ' (จำนอง ไม่เก็บค่าเช่า)' : '') : 'ยังไม่มีเจ้าของ'}</p>`;
+    h += deedHTML(i);
   }
   box.innerHTML = h;
 }
@@ -1236,9 +1349,11 @@ function renderProps() {
     }
     if (S.mort[i]) b.push(`<button class="btn sm" data-m="unmort" data-i="${i}" ${can && !debt && p.money >= unmortCost(i) ? '' : 'disabled'}>ไถ่ถอน ${fmt(unmortCost(i))}</button>`);
     else b.push(`<button class="btn sm" data-m="mort" data-i="${i}" ${can && canMortgage(p, i) ? '' : 'disabled'} title="ได้เงินทันที แต่ไม่ได้ค่าเช่าระหว่างจำนอง">จำนอง +${fmt(t.price / 2)}</button>`);
-    return `<div class="pr"><span class="sw" style="--g:${g}"></span><span>${esc(t.name)} ${hc ? (hc === 5 ? '🏬' : '🏠×' + hc) : ''}${S.mort[i] ? ' (จำนอง ไม่ได้ค่าเช่า)' : ''}
-      ${why && can && !debt ? `<span class="why">${esc(why)}</span>` : ''}</span><span class="bt">${b.join('')}</span></div>`;
-  }).join('') : '<p class="hint" style="margin:0">ยังไม่มีที่ดิน ไปซื้อสักแปลงสิ</p>';
+    return `<div class="mdeed${S.mort[i] ? ' mortd' : ''}"><button class="mdh" data-sel="${i}" style="--g:${g}">${t.ic && !t.g ? t.ic + ' ' : ''}${esc(t.name)}</button>
+      <span class="mds">${hc ? (hc === 5 ? '🏬 ห้าง' : '🏠×' + hc) : 'ที่ดินเปล่า'} · ค่าเช่าตอนนี้ ${t.type === 'util' ? 'เต๋า×' + (TILES.filter((x, j) => x.type === 'util' && S.owner[j] === p.id).length === 2 ? 100 : 40) : fmt(rentOf(i, 7))}${S.mort[i] ? ' · จำนอง' : ''}</span>
+      ${why && can && !debt ? `<span class="why">${esc(why)}</span>` : ''}<span class="bt">${b.join('')}</span></div>`;
+  }).join('') + (p.cards ? `<div class="mdeed jailc"><span class="mdh plain">🐘 ตั๋วช้าง ×${p.cards}</span><span class="mds">ใช้ออกจากแยกอโศกได้ครั้งละใบ</span></div>` : '')
+    : (p.cards ? `<div class="mdeed jailc"><span class="mdh plain">🐘 ตั๋วช้าง ×${p.cards}</span><span class="mds">ใช้ออกจากแยกอโศกได้ครั้งละใบ</span></div>` : '<p class="hint" style="margin:0">ยังไม่มีที่ดิน ไปซื้อสักแปลงสิ</p>');
 }
 function render() {
   if (!S) { renderBoard(); return; }
@@ -1485,6 +1600,8 @@ function resumeGame() {
 document.addEventListener('click', e => {
   const tile = e.target.closest('.tile');
   if (tile) { sel = +tile.dataset.i === sel ? null : +tile.dataset.i; render(); return; }
+  const ds = e.target.closest('[data-sel]');
+  if (ds) { sel = +ds.dataset.sel; render(); $('info').scrollIntoView({block:'nearest', behavior:lowMo() ? 'auto' : 'smooth'}); return; }
   const b = e.target.closest('button'); if (!b || b.disabled) return;
   audio();   // unlock sound on the first tap
   if (b.dataset.react) { sendReact(+b.dataset.react); return; }
