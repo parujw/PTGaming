@@ -1,6 +1,6 @@
 rules_version = '2';
-// Only people whose Google email is listed in teams/{teamId}.members can read or write that team.
-// Add members in Firebase Console > Firestore > teams > fo > members (array of lowercase emails).
+// Only people whose email is listed in teams/{teamId}.members can read or write that team.
+// Admins add people in the app (ตั้งค่า > จัดการทีม), which also fills this list.
 service cloud.firestore {
   match /databases/{database}/documents {
     function isMember(teamId) {
@@ -8,13 +8,18 @@ service cloud.firestore {
         && request.auth.token.email_verified == true
         && request.auth.token.email.lower() in get(/databases/$(database)/documents/teams/$(teamId)).data.members;
     }
+    // Profiles (name, role) are created by admins through the server. People read only their own.
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
     match /teams/{teamId} {
       allow read: if isMember(teamId);
       allow write: if false; // members list is edited in the console only
       match /items/{itemId} {
         allow read, delete: if isMember(teamId);
         allow create, update: if isMember(teamId)
-          && request.resource.data.keys().hasOnly(['room','guest','cat','pri','summary','action','due','done','doneBy','doneAt','createdAt','by'])
+          && request.resource.data.keys().hasOnly(['room','guest','cat','pri','summary','action','due','done','doneBy','doneByUid','doneAt','createdAt','by','byUid'])
           && request.resource.data.summary is string && request.resource.data.summary.size() <= 600;
       }
       match /briefs/{briefId} {

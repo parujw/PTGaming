@@ -46,6 +46,7 @@
   --green:#3cc39c; --green-soft:#11322a; --scrim:rgba(0,0,0,.62); --shadow:0 1px 2px rgba(0,0,0,.3);
   color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -122,6 +123,48 @@ details.donebox .tasks{margin-top:10px}
 .empty b{display:block;font-family:var(--f-display);font-size:20px;color:var(--ink);margin-bottom:4px}
 .exbar{margin-top:14px;font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .exbar button{color:var(--gold-ink);font-weight:600}
+
+/* login */
+body.locked .nav{display:none}
+.login{min-height:calc(100vh - 60px);display:flex;flex-direction:column;justify-content:center;gap:24px;max-width:420px;margin:0 auto;padding-block:24px}
+.login-brand{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.login-brand .orb{width:76px;height:76px}
+.login-brand .orb svg{width:34px;height:34px}
+.login-brand h1{font-size:30px}
+.login-brand p{margin:0;color:var(--muted)}
+.form{display:flex;flex-direction:column;gap:14px}
+.login-card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:var(--shadow)}
+.pw{position:relative}
+.pw input{padding-right:70px}
+.pw button{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:600;color:var(--gold-ink);padding:6px 8px}
+.link{color:var(--gold-ink);font-weight:600;font-size:14px;align-self:center;padding:4px}
+input[type=email]{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 15px}
+
+/* bell + inbox */
+.top-act{display:flex;gap:10px;align-items:center}
+.icon-btn{position:relative;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--ink)}
+.icon-btn svg{width:22px;height:22px}
+.badge{position:absolute;top:-3px;right:-3px;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:var(--red);color:#fff;font-size:11.5px;font-weight:700;display:grid;place-items:center;border:2px solid var(--bg)}
+.noti{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.noti.new{border-color:var(--green);background:color-mix(in srgb,var(--green-soft) 55%,var(--card))}
+.noti-ic svg{width:28px;height:28px;padding:5px;border-radius:50%;background:var(--green);color:#fff}
+.noti-t{display:flex;flex-direction:column;min-width:0;font-size:14px}
+.noti-t b{font-family:var(--f-display);font-size:16px}
+.noti-t small{color:var(--muted);font-size:12.5px;margin-top:2px}
+
+/* account + team */
+.acct{gap:12px}
+.acct-row{display:flex;gap:12px;align-items:center}
+.avatar{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:18px;color:#1b1406;background:linear-gradient(135deg,var(--gold-hi),var(--gold))}
+.team{display:flex;flex-direction:column;gap:8px}
+.member{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+.member.off{opacity:.5}
+.m-t{flex:1;min-width:0;display:flex;flex-direction:column}
+.m-t small{color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.pw-inline{display:flex;gap:8px;width:100%}
+.pw-inline input{flex:1;padding:9px 12px}
+.switch{display:flex;align-items:center;gap:10px;font-size:15px}
+.switch input{width:20px;height:20px;accent-color:var(--gold)}
 
 /* nav */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:30;pointer-events:none;
@@ -256,6 +299,24 @@ details.more summary{cursor:pointer;color:var(--gold-ink);font-size:13.5px;font-
 <body>
 
 <div class="wrap">
+  <!-- LOGIN -->
+  <section id="v-login" class="login" hidden>
+    <div class="login-brand">
+      <span class="orb" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+      <h1>Jarvis ส่งเวร</h1>
+      <p>เข้าสู่ระบบเพื่อดูงานที่ต้องทำต่อของทีม</p>
+    </div>
+    <form id="loginForm" class="form login-card" novalidate>
+      <div><label class="lab" for="lEmail">อีเมล</label><input type="email" id="lEmail" autocomplete="username" inputmode="email" placeholder="name@example.com"></div>
+      <div><label class="lab" for="lPass">รหัสผ่าน</label>
+        <div class="pw"><input type="password" id="lPass" autocomplete="current-password"><button type="button" id="lShow">แสดง</button></div></div>
+      <p class="err" id="lErr" hidden></p>
+      <button class="btn pri" type="submit" id="lBtn">เข้าสู่ระบบ</button>
+      <button class="link" type="button" id="lForgot">ลืมรหัสผ่าน</button>
+      <p class="note" id="lNote"></p>
+    </form>
+  </section>
+
   <!-- HOME -->
   <section id="v-home">
     <header class="top">
@@ -263,10 +324,16 @@ details.more summary{cursor:pointer;color:var(--gold-ink);font-size:13.5px;font-
         <div class="eyebrow"><span id="todayLabel"></span><span aria-hidden="true">·</span><span id="shiftLabel">กะเช้า → กะบ่าย</span><span class="sync" id="syncTag">เครื่องนี้</span></div>
         <h1>งานที่ต้องทำต่อ</h1>
       </div>
+      <div class="top-act">
+      <button class="icon-btn bell" id="bellBtn" aria-label="แจ้งเตือน" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+        <span class="badge num" id="bellBadge" hidden>0</span>
+      </button>
       <button class="orb" id="orbHome" aria-label="คุยกับ Jarvis">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
         <span class="dot" id="orbDot" hidden></span>
       </button>
+      </div>
     </header>
 
     <div class="status" id="status">
@@ -274,7 +341,7 @@ details.more summary{cursor:pointer;color:var(--gold-ink);font-size:13.5px;font-
       <div class="st-chips" id="stChips"></div>
       <button class="st-send" id="sendAll">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-        ส่งบรีฟ
+        สรุปส่งไลน์
       </button>
     </div>
 
@@ -283,7 +350,7 @@ details.more summary{cursor:pointer;color:var(--gold-ink);font-size:13.5px;font-
 
   <!-- BRIEFS -->
   <section id="v-briefs" hidden>
-    <header class="top"><div><div class="eyebrow">ใครรับเวรแล้วบ้าง</div><h1>บรีฟที่ส่ง</h1></div></header>
+    <header class="top"><div><div class="eyebrow">ใครรับเวรแล้วบ้าง</div><h1>สรุปที่ส่งไลน์</h1></div></header>
     <div class="hist" id="hist"></div>
   </section>
 
@@ -293,7 +360,7 @@ details.more summary{cursor:pointer;color:var(--gold-ink);font-size:13.5px;font-
   <div class="nav-in">
     <button class="nav-btn" data-view="briefs" id="navBriefs">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10v18l-2.5-1.5L12 21l-2.5-1.5L7 21z"/><path d="M10 8h4M10 12h4"/></svg>
-      บรีฟที่ส่ง
+      สรุปที่ส่ง
     </button>
     <button class="fab" id="fab" aria-label="เปิดเมนูด่วน">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" id="fabIco"><path d="M4 10.5 12 4l8 6.5V20h-5v-5h-6v5H4z"/></svg>
@@ -339,7 +406,12 @@ const EXAMPLES = [
   { room: "1104", guest: "คุณ K.", cat: "billing", pri: "follow", summary: "มัดจำบัตรยังไม่ผ่าน", action: "ขอบัตรใบใหม่หรือเงินสดตอนแขกกลับเข้าห้อง", due: "" },
   { room: "—", guest: "", cat: "lost", pri: "info", summary: "พบแว่นกันแดดที่ล็อบบี้ เก็บไว้ที่ Concierge", action: "", due: "" },
   { room: "803", guest: "คุณ P. (VIP)", cat: "vip", pri: "info", summary: "ครบรอบแต่งงาน จัดเค้กแล้ว", action: "", due: "" },
-].map((x, i) => ({ ...x, id: "ex" + i, done: i === 6, ex: true, createdAt: Date.now() - (7 - i) * 6e5, by: "ตัวอย่าง", doneBy: i === 6 ? "ตัวอย่าง" : "", doneAt: i === 6 ? Date.now() - 18e5 : 0 }));
+].map((x, i) => {
+  const mine = [0, 1, 6].includes(i); // reported by the shift leader in the demo
+  return { ...x, id: "ex" + i, done: i === 6, ex: true, createdAt: Date.now() - (7 - i) * 6e5,
+    by: mine ? "หัวหน้ากะ" : "ออม", byUid: mine ? "demo-admin" : "demo-staff",
+    doneBy: i === 6 ? "ออม" : "", doneByUid: i === 6 ? "demo-staff" : "", doneAt: i === 6 ? Date.now() - 18e5 : 0 };
+});
 // Example due times follow the clock so the demo always shows late, soon and later work.
 const hhmm = mins => { const d = new Date(Date.now() + mins * 6e4); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); };
 EXAMPLES[0].due = hhmm(40); EXAMPLES[1].due = hhmm(-15); EXAMPLES[3].due = hhmm(150);
@@ -366,7 +438,7 @@ const listeners = new Set();
 const emit = () => listeners.forEach(f => f());
 
 const LocalStore = (() => {
-  const KEY = "jarvis-data-v2";
+  const KEY = "jarvis-data-v3";
   let d = { items: EXAMPLES, briefs: [] };
   try { const raw = localStorage.getItem(KEY); if (raw) d = JSON.parse(raw); } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} ITEMS = d.items; BRIEFS = d.briefs; emit(); };
@@ -383,11 +455,41 @@ const LocalStore = (() => {
   };
 })();
 
+// ---------------- accounts ----------------
+// firebase: email + password through Firebase Auth (the real app)
+// demo: accounts kept in this browser, for the preview only (window.JARVIS_DEMO_USERS)
+// none: no sign-in; the name in Settings is used
+const AUTH = CFG.firebase ? "firebase" : (Array.isArray(window.JARVIS_DEMO_USERS) ? "demo" : "none");
+let ME = null; // { uid, email, name, role }
+const myName = () => ME?.name || P.name || "";
+const myUid = () => ME?.uid || "";
+const isAdmin = () => ME?.role === "admin";
+
+async function sha256(t) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+
+const Demo = {
+  KEY: "jarvis-demo-users", SKEY: "jarvis-demo-session",
+  users() { try { const r = localStorage.getItem(this.KEY); if (r) return JSON.parse(r); } catch (e) {} return (window.JARVIS_DEMO_USERS || []).map(u => ({ ...u })); },
+  save(list) { try { localStorage.setItem(this.KEY, JSON.stringify(list)); } catch (e) {} },
+  setSession(uid) { try { uid ? localStorage.setItem(this.SKEY, uid) : localStorage.removeItem(this.SKEY); } catch (e) {} },
+  current() { let s = ""; try { s = localStorage.getItem(this.SKEY) || ""; } catch (e) {} return s ? this.users().find(u => u.uid === s && !u.disabled) || null : null; },
+  async login(email, pass) {
+    const e = email.trim().toLowerCase();
+    const u = this.users().find(x => x.email === e);
+    if (!u || u.disabled || u.hash !== await sha256(e + ":" + pass)) throw { code: "auth/invalid-credential" };
+    this.setSession(u.uid);
+    return u;
+  },
+};
+
 let store = LocalStore;
-let fb = null; // { auth, user, db, fs }
+let fb = null; // { auth, authM, db, fs, user }
 
 async function startCloud() {
-  if (!CFG.firebase) return;
+  if (AUTH !== "firebase") return;
   try {
     const V = "10.12.2";
     const [appM, authM, fs] = await Promise.all([
@@ -399,14 +501,19 @@ async function startCloud() {
     const auth = authM.getAuth(app);
     const db = fs.getFirestore(app);
     fb = { auth, authM, db, fs, user: null };
-    authM.getRedirectResult(auth).catch(() => {});
-    authM.onAuthStateChanged(auth, user => {
+    loginReady(true);
+    authM.onAuthStateChanged(auth, async user => {
       fb.user = user;
-      if (user) useCloud(); else { store = LocalStore; store.start(); }
-      renderSync();
+      if (!user) return setMe(null);
+      let prof = {};
+      try { const d = await fs.getDoc(fs.doc(db, "users", user.uid)); if (d.exists()) prof = d.data(); } catch (e) {}
+      if (prof.disabled) { await authM.signOut(auth); return loginError("บัญชีนี้ถูกปิดการใช้งาน"); }
+      useCloud();
+      setMe({ uid: user.uid, email: user.email, name: prof.name || user.displayName || user.email.split("@")[0], role: prof.role || "staff" });
     });
   } catch (e) {
     console.warn("Firebase unavailable", e);
+    loginError("เชื่อมต่อระบบไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วโหลดหน้าใหม่");
   }
 }
 
@@ -422,7 +529,7 @@ function useCloud() {
     start() {},
     async addItems(list) {
       const batch = fs.writeBatch(db);
-      list.forEach(it => { const { id, ...rest } = it; batch.set(fs.doc(itemsCol, id), rest); });
+      list.forEach(it => { const { id, ex, ...rest } = it; batch.set(fs.doc(itemsCol, id), rest); });
       await batch.commit();
     },
     updateItem: (id, patch) => fs.updateDoc(fs.doc(itemsCol, id), patch),
@@ -432,29 +539,119 @@ function useCloud() {
     ackBrief: (id, ack) => fs.updateDoc(fs.doc(briefsCol, id), { acks: fs.arrayUnion(ack) }),
     patchBrief: (id, patch) => fs.updateDoc(fs.doc(briefsCol, id), patch),
   };
-  const fail = e => { console.warn(e); toast(e.code === "permission-denied" ? "บัญชีนี้ยังไม่อยู่ในทีม ให้หัวหน้าเพิ่มอีเมลก่อน" : "เชื่อมต่อฐานข้อมูลไม่ได้"); };
+  const fail = e => { console.warn(e); toast(e.code === "permission-denied" ? "บัญชีนี้ยังไม่อยู่ในทีม ให้ผู้ดูแลเพิ่มก่อน" : "เชื่อมต่อฐานข้อมูลไม่ได้"); };
   unsub.push(fs.onSnapshot(fs.query(itemsCol, fs.orderBy("createdAt", "desc"), fs.limit(400)),
     snap => { ITEMS = snap.docs.map(d => ({ id: d.id, ...d.data() })); emit(); }, fail));
   unsub.push(fs.onSnapshot(fs.query(briefsCol, fs.orderBy("at", "desc"), fs.limit(40)),
     snap => { BRIEFS = snap.docs.map(d => ({ id: d.id, ...d.data() })); emit(); }, fail));
 }
 
-async function signIn() {
-  const { auth, authM } = fb;
-  const prov = new authM.GoogleAuthProvider();
-  try { await authM.signInWithPopup(auth, prov); }
-  catch (e) { if (/popup/.test(e.code || "")) await authM.signInWithRedirect(auth, prov); else toast("เข้าสู่ระบบไม่สำเร็จ"); }
+function setMe(u) {
+  ME = u;
+  if (!u && AUTH === "firebase") { unsub.forEach(f => f()); unsub = []; ITEMS = []; BRIEFS = []; }
+  CHAT = [];
+  showLogin(!u && AUTH !== "none");
+  renderSync();
+  emit();
 }
+
+// ---------------- login page ----------------
+const AUTH_ERR = {
+  "auth/invalid-credential": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+  "auth/wrong-password": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+  "auth/user-not-found": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+  "auth/invalid-email": "รูปแบบอีเมลไม่ถูกต้อง",
+  "auth/too-many-requests": "ลองผิดหลายครั้ง รอสักครู่แล้วลองใหม่",
+  "auth/user-disabled": "บัญชีนี้ถูกปิดการใช้งาน",
+  "auth/network-request-failed": "เชื่อมต่อไม่ได้ ตรวจสอบอินเทอร์เน็ต",
+};
+function showLogin(on) {
+  document.body.classList.toggle("locked", on);
+  $("#v-login").hidden = !on;
+  if (on) { ["home", "briefs"].forEach(x => $("#v-" + x).hidden = true); closeAll(); setTimeout(() => $("#lEmail").focus(), 50); }
+  else { $("#lPass").value = ""; show(view === "login" ? "home" : view); }
+}
+function loginError(msg) { const e = $("#lErr"); e.textContent = msg; e.hidden = !msg; }
+function loginReady(ok) { $("#lBtn").disabled = !ok; $("#lNote").textContent = ok ? "" : "กำลังเชื่อมต่อ…"; }
+$("#loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = $("#lEmail").value.trim(), pass = $("#lPass").value;
+  if (!email || !pass) return loginError("ใส่อีเมลและรหัสผ่าน");
+  loginError(""); const btn = $("#lBtn"); btn.disabled = true; btn.textContent = "กำลังเข้าสู่ระบบ…";
+  try {
+    if (AUTH === "demo") { const u = await Demo.login(email, pass); setMe({ uid: u.uid, email: u.email, name: u.name, role: u.role }); }
+    else await fb.authM.signInWithEmailAndPassword(fb.auth, email, pass);
+  } catch (err) { loginError(AUTH_ERR[err.code] || "เข้าสู่ระบบไม่สำเร็จ ลองใหม่อีกครั้ง"); }
+  btn.disabled = false; btn.textContent = "เข้าสู่ระบบ";
+});
+$("#lShow").onclick = () => { const i = $("#lPass"); const show = i.type === "password"; i.type = show ? "text" : "password"; $("#lShow").textContent = show ? "ซ่อน" : "แสดง"; };
+$("#lForgot").onclick = async () => {
+  const email = $("#lEmail").value.trim();
+  if (AUTH === "demo") return loginError("โหมดทดลอง: ให้ผู้ดูแลตั้งรหัสผ่านใหม่ในหน้าจัดการทีม");
+  if (!email) return loginError("ใส่อีเมลก่อน แล้วกดลืมรหัสผ่านอีกครั้ง");
+  try { await fb.authM.sendPasswordResetEmail(fb.auth, email); loginError(""); $("#lNote").textContent = `ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่ ${email} แล้ว (ถ้ามีบัญชีนี้ในระบบ)`; }
+  catch (err) { loginError(AUTH_ERR[err.code] || "ส่งอีเมลไม่สำเร็จ"); }
+};
+
+async function signOutNow() {
+  if (AUTH === "demo") { Demo.setSession(""); setMe(null); }
+  else if (fb) await fb.authM.signOut(fb.auth);
+  toast("ออกจากระบบแล้ว");
+}
+async function changePassword(cur, next) {
+  if (next.length < 8) throw new Error("รหัสผ่านใหม่ต้องยาวอย่างน้อย 8 ตัว");
+  if (AUTH === "demo") {
+    const list = Demo.users(); const u = list.find(x => x.uid === ME.uid);
+    if (!u || u.hash !== await sha256(u.email + ":" + cur)) throw new Error("รหัสผ่านปัจจุบันไม่ถูกต้อง");
+    u.hash = await sha256(u.email + ":" + next); Demo.save(list); return;
+  }
+  const { authM, user } = { authM: fb.authM, user: fb.user };
+  try { await authM.reauthenticateWithCredential(user, authM.EmailAuthProvider.credential(user.email, cur)); }
+  catch (e) { throw new Error(AUTH_ERR[e.code] === AUTH_ERR["auth/invalid-credential"] ? "รหัสผ่านปัจจุบันไม่ถูกต้อง" : (AUTH_ERR[e.code] || "ยืนยันตัวตนไม่สำเร็จ")); }
+  await authM.updatePassword(user, next);
+}
+
+// Team management (admins)
+const Team = {
+  async list() {
+    if (AUTH === "demo") return Demo.users().map(({ hash, ...u }) => u);
+    return (await api("users", null)).users;
+  },
+  async add(m) {
+    if (AUTH === "demo") {
+      const list = Demo.users(); const email = m.email.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("อีเมลไม่ถูกต้อง");
+      if (!m.name.trim()) throw new Error("ใส่ชื่อที่จะแสดงในแอป");
+      if (m.password.length < 8) throw new Error("รหัสผ่านต้องยาวอย่างน้อย 8 ตัว");
+      if (list.some(u => u.email === email)) throw new Error("อีเมลนี้มีบัญชีอยู่แล้ว");
+      list.push({ uid: "demo-" + uid(), email, name: m.name.trim(), role: m.role, hash: await sha256(email + ":" + m.password) });
+      Demo.save(list); return;
+    }
+    await api("users", { action: "create", ...m });
+  },
+  async setPassword(id, password) {
+    if (AUTH === "demo") {
+      if (password.length < 8) throw new Error("รหัสผ่านต้องยาวอย่างน้อย 8 ตัว");
+      const list = Demo.users(); const u = list.find(x => x.uid === id); u.hash = await sha256(u.email + ":" + password); Demo.save(list); return;
+    }
+    await api("users", { action: "password", uid: id, password });
+  },
+  async remove(id) {
+    if (id === myUid()) throw new Error("ปิดบัญชีของตัวเองไม่ได้");
+    if (AUTH === "demo") { const list = Demo.users(); list.find(x => x.uid === id).disabled = true; Demo.save(list); return; }
+    await api("users", { action: "remove", uid: id });
+  },
+};
 
 // ---------------- server features ----------------
 let SERVER = { ai: false, linePush: false, pin: false };
 fetch("api/config", { cache: "no-store" }).then(r => r.ok ? r.json() : {}).then(j => { SERVER = { ...SERVER, ...j }; }).catch(() => {});
 
 async function api(path, body) {
-  const headers = { "content-type": "application/json" };
+  const headers = body === null ? {} : { "content-type": "application/json" };
   if (fb?.user) headers.authorization = "Bearer " + await fb.user.getIdToken();
   else if (P.pin) headers["x-team-pin"] = P.pin;
-  const r = await fetch("api/" + path, { method: "POST", headers, body: JSON.stringify(body) });
+  const r = await fetch("api/" + path, body === null ? { headers } : { method: "POST", headers, body: JSON.stringify(body) });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error || "เซิร์ฟเวอร์ตอบ " + r.status);
   return j;
@@ -527,12 +724,66 @@ const voice = {
   },
 };
 
+// ---------------- done: who closed it, and tell the person who reported it ----------------
+function donePatch(done) {
+  return { done, doneBy: done ? myName() : "", doneByUid: done ? myUid() : "", doneAt: done ? Date.now() : 0 };
+}
+// Post "เรียบร้อยแล้ว" to the LINE group once the 5-second undo window has passed.
+function afterClose(id) {
+  if (!SERVER.linePush || P.lineOnDone === false) return;
+  setTimeout(() => {
+    const it = ITEMS.find(i => i.id === id);
+    if (!it || !it.done || it.ex) return;
+    const at = new Date(it.doneAt || Date.now()).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+    api("line-push", { text: `✅ เรียบร้อยแล้ว · ห้อง ${it.room}\n${it.action || it.summary}\nแจ้งโดย ${it.by || "-"} · ปิดโดย ${it.doneBy || "-"} · ${at}` }).catch(() => {});
+  }, 6000);
+}
+
+const bootAt = Date.now();
+const toasted = new Set();
+const seenKey = () => "jarvis-seen-" + myUid();
+function seenAt() { try { return +localStorage.getItem(seenKey()) || 0; } catch (e) { return 0; } }
+// Work I reported that someone else has finished.
+function myNotifs() {
+  const me = myUid(); if (!me) return [];
+  return ITEMS.filter(i => i.done && i.byUid === me && i.doneByUid && i.doneByUid !== me).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
+}
+function checkNotifs() {
+  const bell = $("#bellBtn"); bell.hidden = !ME;
+  if (!ME) return;
+  const list = myNotifs(), seen = seenAt();
+  const unseen = list.filter(i => (i.doneAt || 0) > seen).length;
+  const badge = $("#bellBadge"); badge.hidden = !unseen; badge.textContent = unseen > 9 ? "9+" : unseen;
+  bell.setAttribute("aria-label", unseen ? `แจ้งเตือน ${unseen} รายการใหม่` : "แจ้งเตือน");
+  for (const it of list) {
+    if ((it.doneAt || 0) <= bootAt || toasted.has(it.id)) continue;
+    toasted.add(it.id);
+    const msg = `${it.room} ที่คุณแจ้ง เรียบร้อยแล้ว · โดย ${it.doneBy || "ทีม"}`;
+    toast("✅ " + msg);
+    try { if (document.hidden && Notification.permission === "granted") new Notification("Jarvis ส่งเวร", { body: msg, icon: "icon-192.png" }); } catch (e) {}
+  }
+}
+listeners.add(checkNotifs);
+function openInbox() {
+  const list = myNotifs(), seen = seenAt();
+  openSheet(`<h3>แจ้งเตือน</h3><p class="note">งานที่คุณแจ้งไว้ และเพื่อนทำเรียบร้อยแล้ว</p>
+    ${list.length ? `<div class="tasks">${list.slice(0, 60).map(it => `
+      <button class="noti ${(it.doneAt || 0) > seen ? "new" : ""}" data-open="${esc(it.id)}">
+        <span class="noti-ic">${IC.check}</span>
+        <span class="noti-t"><b>${esc(it.room)} เรียบร้อยแล้ว</b><span>${esc(it.action || it.summary)}</span><small>ปิดโดย ${esc(it.doneBy || "-")} · ${esc(fmt(it.doneAt))}</small></span>
+      </button>`).join("")}</div>`
+    : `<div class="empty"><b>ยังไม่มีแจ้งเตือน</b>เมื่อเพื่อนปิดงานที่คุณแจ้ง จะขึ้นที่นี่ทันที</div>`}`);
+  try { localStorage.setItem(seenKey(), String(Date.now())); } catch (e) {}
+  checkNotifs();
+  $("#sheetIn").querySelectorAll("[data-open]").forEach(b => b.onclick = () => openItem(b.dataset.open));
+}
+
 // ---------------- render ----------------
 let view = "home";
 function renderSync() {
   const tag = $("#syncTag");
   if (store.mode === "cloud") { tag.textContent = "ทีม · ซิงก์แล้ว"; tag.className = "sync cloud"; }
-  else { tag.textContent = "เครื่องนี้"; tag.className = "sync"; }
+  else { tag.textContent = AUTH === "demo" ? "ทดลอง" : "เครื่องนี้"; tag.className = "sync"; }
 }
 // Minutes from now until a "HH:MM" due time today (handles shifts that cross midnight).
 function minsUntil(due) {
@@ -620,13 +871,13 @@ listeners.add(render);
 
 function renderBriefs() {
   const el = $("#hist");
-  if (!BRIEFS.length) { el.innerHTML = `<div class="empty">ยังไม่มีบรีฟ<br>บรีฟที่ส่งหรือคัดลอกจะเก็บไว้ที่นี่ พร้อมรายชื่อคนที่รับเวรแล้ว</div>`; return; }
+  if (!BRIEFS.length) { el.innerHTML = `<div class="empty">ยังไม่มีสรุปที่ส่ง<br>สรุปที่ส่งหรือคัดลอกเข้าไลน์จะเก็บไว้ที่นี่ พร้อมรายชื่อคนที่รับเวรแล้ว</div>`; return; }
   el.innerHTML = BRIEFS.map(b => {
     const acks = b.acks || [];
     const ackHtml = acks.length ? acks.map(a => `<span class="ack">✓ ${esc(a.name)} · ${new Date(a.at).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}</span>`).join("") : `<span class="ack wait">ยังไม่มีคนรับเวร</span>`;
     return `<article class="bcard">
       <div class="bmeta"><span>${esc(fmt(b.at))} · ${esc(b.by || "-")}</span><span>${b.n} เรื่อง${b.urgent ? ` · ด่วน ${b.urgent}` : ""}${b.via ? " · " + esc(b.via) : ""}</span></div>
-      <div class="bhead">${esc(b.title || "บรีฟ")} · ${esc(b.from || "")} → ${esc(b.to || "")}</div>
+      <div class="bhead">${esc(b.title || "สรุป")} · ${esc(b.from || "")} → ${esc(b.to || "")}</div>
       <div class="acks">${ackHtml}</div>
       <details class="more"><summary>ดูข้อความ</summary><pre class="brief" style="margin-top:8px">${esc(b.text)}</pre></details>
       <div class="row"><button class="btn sec" data-copy="${esc(b.id)}">คัดลอก</button><button class="btn dark" data-ack="${esc(b.id)}">ฉันรับเวรแล้ว</button></div>
@@ -640,25 +891,26 @@ document.addEventListener("click", e => {
   if (e.target.id === "clearEx") { store.clearExamples(); toast("ล้างข้อมูลตัวอย่างแล้ว"); return; }
   const cp = e.target.closest("[data-copy]"); if (cp) { const b = BRIEFS.find(x => x.id === cp.dataset.copy); if (b) copy(b.text); return; }
   const ak = e.target.closest("[data-ack]"); if (ak) {
-    if (!P.name) { toast("ใส่ชื่อของคุณในตั้งค่าก่อน"); return openSettings(); }
+    if (!myName()) { toast("ใส่ชื่อของคุณในตั้งค่าก่อน"); return openSettings(); }
     const b = BRIEFS.find(x => x.id === ak.dataset.ack);
-    if (b && (b.acks || []).some(a => a.name === P.name)) return toast("คุณรับเวรนี้แล้ว");
-    store.ackBrief(ak.dataset.ack, { name: P.name, at: Date.now(), via: "app" }).then(() => toast("บันทึกว่ารับเวรแล้ว"));
+    if (b && (b.acks || []).some(a => a.name === myName())) return toast("คุณรับเวรนี้แล้ว");
+    store.ackBrief(ak.dataset.ack, { name: myName(), uid: myUid(), at: Date.now(), via: "app" }).then(() => toast("บันทึกว่ารับเวรแล้ว"));
   }
 });
 
 function toggleDone(id) {
   const it = ITEMS.find(i => i.id === id); if (!it) return;
-  const prev = { done: !!it.done, doneBy: it.doneBy || "", doneAt: it.doneAt || 0 };
+  const prev = { done: !!it.done, doneBy: it.doneBy || "", doneByUid: it.doneByUid || "", doneAt: it.doneAt || 0 };
   const done = !it.done;
-  store.updateItem(id, { done, doneBy: done ? (P.name || "") : "", doneAt: done ? Date.now() : 0 })
-    .then(() => toast(done ? `${it.room} เสร็จแล้ว` : `เปิด ${it.room} อีกครั้ง`, () => store.updateItem(id, prev)))
+  store.updateItem(id, donePatch(done))
+    .then(() => { toast(done ? `${it.room} เสร็จแล้ว${it.by && it.byUid !== myUid() ? " · แจ้ง " + it.by + " ให้แล้ว" : ""}` : `เปิด ${it.room} อีกครั้ง`, () => store.updateItem(id, prev)); if (done) afterClose(id); })
     .catch(e => toast("บันทึกไม่สำเร็จ: " + (e.code || e.message)));
 }
 
 // ---------------- views & nav ----------------
 function show(v) {
   view = v;
+  if (document.body.classList.contains("locked")) return;
   ["home", "briefs"].forEach(x => $("#v-" + x).hidden = x !== v);
   $("#navBriefs").classList.toggle("on", v === "briefs");
   window.scrollTo(0, 0);
@@ -676,6 +928,7 @@ const IC = {
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
   home: '<path d="M4 10.5 12 4l8 6.5V20h-5v-5h-6v5H4z"/>',
   x: '<path d="M6 6l12 12M18 6 6 18"/>',
+  bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
   list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>',
   grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg>',
 };
@@ -707,6 +960,7 @@ $("#fab").onclick = () => {
 };
 $("#scrim").onclick = closeAll;
 $("#orbHome").onclick = () => openJarvis(null, true);
+$("#bellBtn").onclick = () => openInbox();
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeAll(); });
 
 function closeAll() { if (radialOpen) toggleRadial(false); $("#sheet").hidden = true; $("#scrim").hidden = true; if (voice.live || voice.want) voice.stop(); }
@@ -721,7 +975,7 @@ const JARVIS_RULES = `คุณคือ Jarvis ผู้ช่วยแผน�
 - close: ผู้ใช้บอกว่าเรื่องนั้นเสร็จ เรียบร้อย จัดการแล้ว ใส่ id
 - reopen: เปิดเรื่องที่ปิดแล้วอีกครั้ง ใส่ id
 - delete: ลบ เฉพาะเมื่อผู้ใช้สั่งลบหรือบอกว่าบันทึกผิดอย่างชัดเจน ใส่ id
-- brief: ผู้ใช้ขอส่งบรีฟหรือส่งเวร id = "" คือทุกเรื่องที่ค้าง หรือใส่ id หลายตัวคั่นด้วยจุลภาค
+- brief: ผู้ใช้ขอสรุปส่งไลน์ ส่งบรีฟ หรือส่งเวร id = "" คือทุกเรื่องที่ค้าง หรือใส่ id หลายตัวคั่นด้วยจุลภาค
 หลักการ:
 - จับคู่เรื่องจากเลขห้องและเนื้อหา ถ้าห้องเดียวมีหลายเรื่องที่ยังเปิดและไม่ชัดว่าหมายถึงเรื่องไหน ให้ถามกลับและไม่ทำ action
 - ถ้าผู้ใช้แค่ถาม ให้ตอบจากบอร์ด และ actions เป็น []
@@ -734,7 +988,7 @@ reply: ภาษาไทยสั้น 1-3 ประโยค สุภาพ�
 let CHAT = [];
 let hintCat = null;
 let jvBusy = false;
-const SUGGEST = ["มีอะไรด่วนบ้าง", "915 ซ่อมแอร์เสร็จแล้ว", "ส่งบรีฟทั้งกะ"];
+const SUGGEST = ["มีอะไรด่วนบ้าง", "915 ซ่อมแอร์เสร็จแล้ว", "สรุปส่งไลน์"];
 
 function renderMicHint() {
   const m = $("#micBtn"); if (m) m.hidden = !voice.available();
@@ -776,8 +1030,8 @@ function openJarvis(cat, autoStart) {
 function drawChat() {
   const el = $("#chat"); if (!el) return;
   if (!CHAT.length) {
-    el.innerHTML = `<div class="bubble bot">สวัสดีครับ${P.name ? " คุณ" + esc(P.name) : ""} สั่งได้เลย เช่น
-      <ul><li>1208 VIP มาบ่ายสามครึ่ง ขอ amenity ไม่มีถั่ว</li><li>915 ซ่อมแอร์เสร็จแล้ว</li><li>เปลี่ยน 712 เป็นด่วน ต้องเสร็จก่อนหกโมง</li><li>ตอนนี้มีอะไรค้างบ้าง</li><li>ส่งบรีฟทั้งกะ</li></ul></div>`;
+    el.innerHTML = `<div class="bubble bot">สวัสดีครับ${myName() ? " คุณ" + esc(myName()) : ""} สั่งได้เลย เช่น
+      <ul><li>1208 VIP มาบ่ายสามครึ่ง ขอ amenity ไม่มีถั่ว</li><li>915 ซ่อมแอร์เสร็จแล้ว</li><li>เปลี่ยน 712 เป็นด่วน ต้องเสร็จก่อนหกโมง</li><li>ตอนนี้มีอะไรค้างบ้าง</li><li>สรุปส่งไลน์</li></ul></div>`;
   } else {
     el.innerHTML = CHAT.map((m, i) => m.role === "user"
       ? `<div class="bubble me">${esc(m.content)}</div>`
@@ -794,7 +1048,7 @@ function drawChat() {
   el.querySelectorAll("[data-brief]").forEach(b => b.onclick = () => {
     const [i, j] = b.dataset.brief.split(":").map(Number); const br = CHAT[i].actions[j].brief;
     const list = ITEMS.filter(x => br.ids.includes(x.id));
-    if (!list.length) return toast("เรื่องในบรีฟนี้ถูกลบไปแล้ว");
+    if (!list.length) return toast("งานในสรุปนี้ถูกลบไปแล้ว");
     briefSheet(list, br.title);
   });
   const sh = $("#sheet"); sh.scrollTop = sh.scrollHeight;
@@ -816,7 +1070,7 @@ function jarvisPayload() {
     messages,
     board: ITEMS.slice(0, 200).map(i => ({ id: i.id, room: i.room, guest: i.guest, cat: i.cat, pri: i.pri, summary: i.summary, action: i.action, due: i.due, done: !!i.done })),
     now: new Date().toLocaleString("th-TH", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
-    shift: `${P.from} → ${P.to}`, name: P.name || "", hintCat,
+    shift: `${P.from} → ${P.to}`, name: myName(), hintCat,
   };
 }
 function jarvisPromptText(p) {
@@ -878,21 +1132,22 @@ async function applyActions(acts) {
     const it = a?.id ? ITEMS.find(i => i.id === a.id) : null;
     try {
       if (type === "add") {
-        const n = { ...normalize(a), createdAt: Date.now(), by: P.name || "" };
+        const n = { ...normalize(a), createdAt: Date.now(), by: myName(), byUid: myUid() };
         await store.addItems([n]);
         out.push({ kind: "add", label: `เพิ่ม ${n.room} · ${PRI[n.pri]}${n.due ? " " + n.due : ""} · ${n.summary}`, undo: () => store.deleteItem(n.id) });
       } else if (type === "brief") {
         const ids = String(a.id || "").split(",").map(s => s.trim()).filter(Boolean);
         const list = ids.length ? ITEMS.filter(i => ids.includes(i.id)) : ITEMS.filter(i => !i.done);
         if (!list.length) { out.push({ kind: "miss", label: "ไม่มีเรื่องค้างให้ส่ง" }); continue; }
-        out.push({ kind: "brief", label: `บรีฟ ${list.length} เรื่อง พร้อมส่ง`, brief: { ids: list.map(i => i.id), title: ids.length ? "อัปเดตระหว่างกะ" : "สรุปทั้งกะ" } });
+        out.push({ kind: "brief", label: `สรุป ${list.length} งาน พร้อมส่งไลน์`, brief: { ids: list.map(i => i.id), title: ids.length ? "อัปเดตระหว่างกะ" : "สรุปทั้งกะ" } });
       } else if (!it) {
         out.push({ kind: "miss", label: `ไม่พบเรื่อง${a?.room ? "ห้อง " + a.room : ""}บนบอร์ด` });
       } else if (type === "close" || type === "reopen") {
         const done = type === "close";
         if (!!it.done === done) { out.push({ kind: "miss", label: `${it.room} ${done ? "ปิดไปแล้ว" : "ยังเปิดอยู่"}` }); continue; }
-        const prev = { done: !!it.done, doneBy: it.doneBy || "", doneAt: it.doneAt || 0 };
-        await store.updateItem(it.id, { done, doneBy: done ? (P.name || "") : "", doneAt: done ? Date.now() : 0 });
+        const prev = { done: !!it.done, doneBy: it.doneBy || "", doneByUid: it.doneByUid || "", doneAt: it.doneAt || 0 };
+        await store.updateItem(it.id, donePatch(done));
+        if (done) afterClose(it.id);
         out.push({ kind: done ? "close" : "update", label: `${done ? "ปิด" : "เปิดใหม่"} ${it.room} · ${it.summary}`, undo: () => store.updateItem(it.id, prev) });
       } else if (type === "update") {
         const n = normalize(a), patch = {};
@@ -921,7 +1176,7 @@ function localJarvis(text) {
   const rooms = [...text.matchAll(/\d{3,4}/g)].map(m => m[0]);
   const open = ITEMS.filter(i => !i.done);
   const firstOpen = r => open.find(i => i.room === r);
-  if (/ส่ง\s*(บรีฟ|เวร)|บรีฟทั้งกะ/.test(text)) return { reply: "เตรียมบรีฟให้แล้วครับ แตะ “ดูและส่ง”", actions: [{ type: "brief", id: "" }] };
+  if (/สรุป|ส่ง\s*(บรีฟ|เวร|ไลน์|line)|บรีฟ/i.test(text) && !/อะไร|บ้าง|กี่/.test(text)) return { reply: "สรุปให้แล้วครับ แตะ “ดูและส่ง”", actions: [{ type: "brief", id: "" }] };
   if (rooms.length && /เสร็จ|เรียบร้อย|ปิด|จบ|แก้แล้ว|done/i.test(text)) {
     const acts = rooms.map(firstOpen).filter(Boolean).map(i => ({ type: "close", id: i.id }));
     return { reply: acts.length ? `ปิดเรื่องห้อง ${acts.map(a => ITEMS.find(i => i.id === a.id).room).join(", ")} แล้วครับ` : "ไม่พบเรื่องที่ยังเปิดอยู่ของห้องนี้ครับ", actions: acts };
@@ -983,37 +1238,37 @@ function buildBrief(items, title) {
       if (it.action && it.summary) t += `   (${it.summary})\n`;
     }
   }
-  t += `\nผู้ส่ง: ${P.name || "-"}\nรับเวรแล้วตอบ "รับ" ในกลุ่มนี้ด้วยครับ`;
+  t += `\nผู้ส่ง: ${myName() || "-"}\nรับเวรแล้วตอบ "รับ" ในกลุ่มนี้ด้วยครับ`;
   return t;
 }
 function briefSheet(items, title) {
   let briefId = null;
-  openSheet(`<h3>บรีฟพร้อมส่ง</h3>
+  openSheet(`<h3>สรุปส่งไลน์</h3>
     <div class="grid2">
       <div><label class="lab" for="from">กะที่ส่ง</label><input type="text" id="from" value="${esc(P.from)}"></div>
       <div><label class="lab" for="to">กะที่รับ</label><input type="text" id="to" value="${esc(P.to)}"></div>
     </div>
-    <div><label class="lab" for="sender">ชื่อผู้ส่ง</label><input type="text" id="sender" placeholder="เช่น คิว (FOM)" value="${esc(P.name)}"></div>
+    ${ME ? "" : `<div><label class="lab" for="sender">ชื่อผู้ส่ง</label><input type="text" id="sender" placeholder="เช่น คิว (FOM)" value="${esc(P.name)}"></div>`}
     <pre class="brief" id="briefTxt"></pre>
     <div class="row" id="sendRow">
       ${SERVER.linePush ? `<button class="btn line" id="push">ส่งเข้ากลุ่มทีม</button>` : `<a class="btn line" id="ln" href="#" target="_blank" rel="noopener">เปิดใน LINE</a>`}
       <button class="btn sec" id="cp">คัดลอก</button>
     </div>
     <p class="err" id="sendErr" hidden></p>
-    <p class="note">${SERVER.linePush ? "ส่งผ่านบัญชี LINE OA ของทีม เพื่อนตอบ “รับ” ในกลุ่มแล้วชื่อจะขึ้นในหน้าบรีฟที่ส่ง" : "“เปิดใน LINE” จะเปิดหน้าเลือกแชท ถ้าไม่เปิด ให้คัดลอกแล้ววางในกลุ่มเอง"}</p>`);
+    <p class="note">${SERVER.linePush ? "ส่งผ่านบัญชี LINE OA ของทีม เพื่อนตอบ “รับ” ในกลุ่มแล้วชื่อจะขึ้นในหน้าสรุปที่ส่ง" : "“เปิดใน LINE” จะเปิดหน้าเลือกแชท ถ้าไม่เปิด ให้คัดลอกแล้ววางในกลุ่มเอง"}</p>`);
   const upd = () => {
-    P.from = $("#from").value.trim() || "กะเช้า"; P.to = $("#to").value.trim() || "กะบ่าย"; P.name = $("#sender").value.trim(); savePrefs();
+    P.from = $("#from").value.trim() || "กะเช้า"; P.to = $("#to").value.trim() || "กะบ่าย"; if ($("#sender")) P.name = $("#sender").value.trim(); savePrefs();
     const t = buildBrief(items, title);
     $("#briefTxt").textContent = t;
     const ln = $("#ln"); if (ln) ln.href = "https://line.me/R/share?text=" + encodeURIComponent(t);
     $("#shiftLabel").textContent = `${P.from} → ${P.to}`;
     return t;
   };
-  ["from", "to", "sender"].forEach(id => $("#" + id).addEventListener("input", upd));
+  ["from", "to", "sender"].forEach(id => $("#" + id)?.addEventListener("input", upd));
   upd();
   const log = async (text, via) => {
     if (briefId) { store.patchBrief(briefId, { text, via }).catch(() => {}); return briefId; }
-    briefId = await store.addBrief({ at: Date.now(), text, title, n: items.length, urgent: items.filter(i => i.pri === "urgent").length, by: P.name || "", from: P.from, to: P.to, via, acks: [] }).catch(() => null);
+    briefId = await store.addBrief({ at: Date.now(), text, title, n: items.length, urgent: items.filter(i => i.pri === "urgent").length, by: myName(), byUid: myUid(), from: P.from, to: P.to, via, acks: [] }).catch(() => null);
     return briefId;
   };
   $("#cp").onclick = () => { const t = upd(); copy(t); log(t, "คัดลอก"); };
@@ -1051,7 +1306,7 @@ function openItem(id) {
   const it = ITEMS.find(i => i.id === id); if (!it) return;
   let pri = it.pri;
   openSheet(`<h3>ห้อง ${esc(it.room)} ${it.ex ? '<span class="tag ex">ตัวอย่าง</span>' : ""}</h3>
-    <p class="note">${esc(CAT_NAME[it.cat])}${it.by ? " · บันทึกโดย " + esc(it.by) : ""}${it.createdAt ? " · " + esc(fmt(it.createdAt)) : ""}${it.done && it.doneBy ? " · ปิดโดย " + esc(it.doneBy) : ""}</p>
+    <p class="note">${esc(CAT_NAME[it.cat])}${it.by ? " · แจ้งโดย " + esc(it.by) : ""}${it.createdAt ? " · " + esc(fmt(it.createdAt)) : ""}${it.done && it.doneBy ? " · ปิดโดย " + esc(it.doneBy) : ""}</p>
     <div class="chips" id="priChips">${Object.keys(PRI).map(p => `<button class="chip ${p} ${p === pri ? "on" : ""}" data-p="${p}">${PRI[p]}</button>`).join("")}</div>
     <div class="grid2">
       <div><label class="lab" for="eRoom">ห้อง</label><input type="text" id="eRoom" value="${esc(it.room)}"></div>
@@ -1061,14 +1316,14 @@ function openItem(id) {
     <div><label class="lab" for="eSum">สถานการณ์</label><textarea id="eSum" style="min-height:80px">${esc(it.summary)}</textarea></div>
     <div><label class="lab" for="eAct">สิ่งที่ต้องทำ</label><textarea id="eAct" style="min-height:70px">${esc(it.action)}</textarea></div>
     <div><label class="lab" for="eCat">หมวด</label><select id="eCat">${CATS.map(c => `<option value="${c.id}" ${c.id === it.cat ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div>
-    <div class="row"><button class="btn sec" id="saveIt">บันทึกการแก้ไข</button><button class="btn pri" id="doneIt">${it.done ? "เปิดเรื่องอีกครั้ง" : "ปิดเรื่องนี้"}</button></div>
+    <div class="row"><button class="btn sec" id="saveIt">บันทึกการแก้ไข</button><button class="btn pri" id="doneIt">${it.done ? "เปิดงานอีกครั้ง" : "ทำเสร็จแล้ว"}</button></div>
     <button class="btn danger" id="delIt">ลบเรื่องนี้</button>
     <p class="note" id="delAsk" hidden>แตะ “ยืนยันลบ” อีกครั้งเพื่อลบถาวร</p>`);
   $("#priChips").querySelectorAll("[data-p]").forEach(b => b.onclick = () => { pri = b.dataset.p; $("#priChips").querySelectorAll(".chip").forEach(c => c.classList.toggle("on", c.dataset.p === pri)); });
   const patch = () => ({ pri, room: $("#eRoom").value.trim() || "—", due: $("#eDue").value, guest: $("#eGuest").value.trim(), summary: $("#eSum").value.trim(), action: $("#eAct").value.trim(), cat: $("#eCat").value });
-  const run = (p, msg) => store.updateItem(it.id, p).then(() => { closeAll(); toast(msg); }).catch(e => toast("บันทึกไม่สำเร็จ: " + (e.code || e.message)));
+  const run = (p, msg) => store.updateItem(it.id, p).then(() => { closeAll(); toast(msg); }).catch(e => { toast("บันทึกไม่สำเร็จ: " + (e.code || e.message)); throw e; });
   $("#saveIt").onclick = () => run(patch(), "บันทึกแล้ว");
-  $("#doneIt").onclick = () => run({ ...patch(), done: !it.done, doneBy: P.name || "", doneAt: Date.now() }, it.done ? "เปิดเรื่องอีกครั้งแล้ว" : "ปิดเรื่องแล้ว");
+  $("#doneIt").onclick = () => run({ ...patch(), ...donePatch(!it.done) }, it.done ? "เปิดงานอีกครั้งแล้ว" : `${it.room} เสร็จแล้ว${it.by && it.byUid !== myUid() ? " · แจ้ง " + it.by + " ให้แล้ว" : ""}`).then(() => { if (!it.done) afterClose(it.id); });
   let armed = false;
   $("#delIt").onclick = () => {
     if (!armed) { armed = true; $("#delIt").textContent = "ยืนยันลบ"; $("#delAsk").hidden = false; return; }
@@ -1078,33 +1333,104 @@ function openItem(id) {
 
 // ---------------- settings ----------------
 function openSettings() {
-  const cloud = !!CFG.firebase;
-  const signedIn = !!fb?.user;
+  const canNotify = "Notification" in window && Notification.permission === "default";
   openSheet(`<h3>ตั้งค่า</h3>
-    <div><label class="lab" for="sName">ชื่อของคุณ (ขึ้นในบรีฟและตอนรับเวร)</label><input type="text" id="sName" value="${esc(P.name)}" placeholder="เช่น คิว (FOM)"></div>
+    ${ME ? `<div class="bcard acct">
+      <div class="acct-row"><span class="avatar">${esc((ME.name || "?").slice(0, 1).toUpperCase())}</span>
+        <div><div class="bhead">${esc(ME.name)} ${isAdmin() ? '<span class="tag ex">ผู้ดูแล</span>' : ""}</div><p class="note">${esc(ME.email)}</p></div></div>
+      <div class="row"><button class="btn sec" id="pwBtn">เปลี่ยนรหัสผ่าน</button><button class="btn sec" id="outBtn">ออกจากระบบ</button></div>
+      ${isAdmin() ? `<button class="btn dark" id="teamBtn">จัดการทีม</button>` : ""}
+    </div>` : `<div><label class="lab" for="sName">ชื่อของคุณ (ขึ้นในสรุปและตอนรับเวร)</label><input type="text" id="sName" value="${esc(P.name)}" placeholder="เช่น คิว (FOM)"></div>`}
     <div class="grid2">
       <div><label class="lab" for="sFrom">กะที่ส่ง</label><input type="text" id="sFrom" value="${esc(P.from)}"></div>
       <div><label class="lab" for="sTo">กะที่รับ</label><input type="text" id="sTo" value="${esc(P.to)}"></div>
     </div>
-    ${cloud ? `<div class="bcard"><div class="bhead">บัญชีทีม</div>
-      <p class="note">${signedIn ? "เข้าสู่ระบบเป็น " + esc(fb.user.email) + " ข้อมูลซิงก์กับทุกคนในทีม" : "เข้าสู่ระบบด้วย Google เพื่อเห็นบอร์ดเดียวกันทั้งทีม อีเมลต้องอยู่ในรายชื่อทีมก่อน"}</p>
-      <button class="btn ${signedIn ? "sec" : "dark"}" id="authBtn">${signedIn ? "ออกจากระบบ" : "เข้าสู่ระบบด้วย Google"}</button></div>` : ""}
-    ${!signedIn && (SERVER.pin || SERVER.ai) ? `<div><label class="lab" for="sPin">PIN ทีม (ใช้ AI และส่ง LINE โดยไม่ต้องเข้าสู่ระบบ)</label><input type="password" id="sPin" value="${esc(P.pin)}" autocomplete="off"></div>` : ""}
-    <p class="note">โหมดตอนนี้: ${store.mode === "cloud" ? "ซิงก์กับทีม" : "เก็บในเครื่องนี้เท่านั้น"} · AI: ${claudeSample ? "Claude (ในแอป Claude)" : SERVER.ai ? "Claude ผ่านเซิร์ฟเวอร์" : "ตัวแยกพื้นฐาน"} · LINE: ${SERVER.linePush ? "ส่งอัตโนมัติ" : "แชร์/คัดลอก"}</p>
+    ${SERVER.linePush ? `<label class="switch"><input type="checkbox" id="sLineDone" ${P.lineOnDone === false ? "" : "checked"}><span>แจ้งในกลุ่ม LINE เมื่องานเสร็จ</span></label>` : ""}
+    ${ME && canNotify ? `<button class="btn sec" id="notiBtn">เปิดการแจ้งเตือนบนเครื่องนี้</button>` : ""}
+    ${AUTH === "none" && (SERVER.pin || SERVER.ai) ? `<div><label class="lab" for="sPin">PIN ทีม (ใช้ AI และส่ง LINE)</label><input type="password" id="sPin" value="${esc(P.pin)}" autocomplete="off"></div>` : ""}
+    <p class="note">${AUTH === "demo" ? "โหมดทดลอง: บัญชีและงานเก็บในเบราว์เซอร์นี้" : store.mode === "cloud" ? "ซิงก์กับทีม" : "เก็บในเครื่องนี้เท่านั้น"} · AI: ${claudeSample ? "Claude (ในแอป Claude)" : SERVER.ai ? "Claude" : "โหมดพื้นฐาน"} · LINE: ${SERVER.linePush ? "ส่งอัตโนมัติ" : "แชร์/คัดลอก"}</p>
     <button class="btn pri" id="saveSet">บันทึก</button>`);
   $("#saveSet").onclick = () => {
-    P.name = $("#sName").value.trim(); P.from = $("#sFrom").value.trim() || "กะเช้า"; P.to = $("#sTo").value.trim() || "กะบ่าย";
-    const pin = $("#sPin"); if (pin) P.pin = pin.value.trim();
+    if ($("#sName")) P.name = $("#sName").value.trim();
+    P.from = $("#sFrom").value.trim() || "กะเช้า"; P.to = $("#sTo").value.trim() || "กะบ่าย";
+    if ($("#sLineDone")) P.lineOnDone = $("#sLineDone").checked;
+    if ($("#sPin")) P.pin = $("#sPin").value.trim();
     savePrefs(); render(); closeAll(); toast("บันทึกแล้ว");
   };
-  const ab = $("#authBtn");
-  if (ab) ab.onclick = async () => { if (!fb) return toast("เชื่อมต่อ Firebase ไม่ได้"); if (fb.user) { await fb.authM.signOut(fb.auth); closeAll(); toast("ออกจากระบบแล้ว"); } else signIn(); };
+  if ($("#outBtn")) $("#outBtn").onclick = () => { closeAll(); signOutNow(); };
+  if ($("#pwBtn")) $("#pwBtn").onclick = openPassword;
+  if ($("#teamBtn")) $("#teamBtn").onclick = openTeam;
+  if ($("#notiBtn")) $("#notiBtn").onclick = () => Notification.requestPermission().then(r => { toast(r === "granted" ? "เปิดการแจ้งเตือนแล้ว" : "เบราว์เซอร์ไม่อนุญาตการแจ้งเตือน"); openSettings(); }).catch(() => toast("เบราว์เซอร์นี้ไม่รองรับ"));
+}
+
+function openPassword() {
+  openSheet(`<h3>เปลี่ยนรหัสผ่าน</h3>
+    <form id="pwForm" class="form" novalidate>
+      <div><label class="lab" for="pCur">รหัสผ่านปัจจุบัน</label><input type="password" id="pCur" autocomplete="current-password"></div>
+      <div><label class="lab" for="pNew">รหัสผ่านใหม่ (อย่างน้อย 8 ตัว)</label><input type="password" id="pNew" autocomplete="new-password"></div>
+      <div><label class="lab" for="pNew2">ยืนยันรหัสผ่านใหม่</label><input type="password" id="pNew2" autocomplete="new-password"></div>
+      <p class="err" id="pErr" hidden></p>
+      <button class="btn pri" type="submit">บันทึกรหัสผ่านใหม่</button>
+    </form>`);
+  $("#pwForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const err = m => { $("#pErr").textContent = m; $("#pErr").hidden = !m; };
+    if ($("#pNew").value !== $("#pNew2").value) return err("รหัสผ่านใหม่ทั้งสองช่องไม่ตรงกัน");
+    try { await changePassword($("#pCur").value, $("#pNew").value); closeAll(); toast("เปลี่ยนรหัสผ่านแล้ว"); }
+    catch (x) { err(x.message || "เปลี่ยนไม่สำเร็จ"); }
+  });
+}
+
+async function openTeam() {
+  openSheet(`<h3>จัดการทีม</h3><div id="teamList" class="team"><p class="note">กำลังโหลด…</p></div>
+    <form id="addForm" class="bcard form" novalidate>
+      <div class="bhead">เพิ่มพนักงาน</div>
+      <div><label class="lab" for="mName">ชื่อที่แสดงในแอป</label><input type="text" id="mName" placeholder="เช่น ออม"></div>
+      <div><label class="lab" for="mEmail">อีเมล</label><input type="email" id="mEmail" autocomplete="off"></div>
+      <div><label class="lab" for="mPass">รหัสผ่านเริ่มต้น (อย่างน้อย 8 ตัว)</label><input type="text" id="mPass" autocomplete="off"></div>
+      <div><label class="lab" for="mRole">สิทธิ์</label><select id="mRole"><option value="staff">พนักงาน</option><option value="admin">ผู้ดูแล (เพิ่ม/ปิดบัญชีได้)</option></select></div>
+      <p class="err" id="mErr" hidden></p>
+      <button class="btn pri" type="submit">เพิ่มเข้าทีม</button>
+      <p class="note">แจ้งอีเมลและรหัสผ่านเริ่มต้นให้พนักงานเอง แล้วให้เปลี่ยนรหัสผ่านหลังเข้าสู่ระบบครั้งแรก</p>
+    </form>`);
+  const draw = async () => {
+    let users;
+    try { users = await Team.list(); } catch (e) { $("#teamList").innerHTML = `<p class="err">${esc(e.message)}</p>`; return; }
+    $("#teamList").innerHTML = users.map(u => `<div class="member ${u.disabled ? "off" : ""}">
+      <span class="avatar">${esc((u.name || "?").slice(0, 1).toUpperCase())}</span>
+      <div class="m-t"><b>${esc(u.name)}${u.uid === myUid() ? " (คุณ)" : ""}</b><small>${esc(u.email)} · ${u.disabled ? "ปิดใช้งาน" : u.role === "admin" ? "ผู้ดูแล" : "พนักงาน"}</small></div>
+      ${u.disabled || u.uid === myUid() ? "" : `<button class="mini" data-pw="${esc(u.uid)}">ตั้งรหัสใหม่</button><button class="mini" data-rm="${esc(u.uid)}">ปิดบัญชี</button>`}
+    </div>`).join("");
+    $("#teamList").querySelectorAll("[data-pw]").forEach(b => b.onclick = async () => {
+      const row = b.closest(".member");
+      if (row.querySelector(".pw-inline")) return;
+      row.insertAdjacentHTML("beforeend", `<form class="pw-inline"><input type="text" placeholder="รหัสใหม่ อย่างน้อย 8 ตัว" aria-label="รหัสผ่านใหม่" autocomplete="off"><button class="mini gold" type="submit">บันทึก</button></form>`);
+      const f = row.querySelector(".pw-inline");
+      f.querySelector("input").focus();
+      f.onsubmit = async e => { e.preventDefault(); try { await Team.setPassword(b.dataset.pw, f.querySelector("input").value); toast("ตั้งรหัสผ่านใหม่แล้ว"); f.remove(); } catch (x) { toast(x.message); } };
+    });
+    $("#teamList").querySelectorAll("[data-rm]").forEach(b => b.onclick = async () => {
+      if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "ยืนยันปิด"; return; }
+      try { await Team.remove(b.dataset.rm); toast("ปิดบัญชีแล้ว"); draw(); } catch (x) { toast(x.message); }
+    });
+  };
+  draw();
+  $("#addForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const err = m => { $("#mErr").textContent = m; $("#mErr").hidden = !m; };
+    try {
+      await Team.add({ name: $("#mName").value.trim(), email: $("#mEmail").value.trim(), password: $("#mPass").value, role: $("#mRole").value });
+      err(""); toast("เพิ่มเข้าทีมแล้ว"); ["mName", "mEmail", "mPass"].forEach(id => $("#" + id).value = ""); draw();
+    } catch (x) { err(x.message || "เพิ่มไม่สำเร็จ"); }
+  });
 }
 
 // ---------------- boot ----------------
 store.start();
 renderSync();
-startCloud();
+if (AUTH === "demo") { const u = Demo.current(); setMe(u ? { uid: u.uid, email: u.email, name: u.name, role: u.role } : null); }
+else if (AUTH === "firebase") { showLogin(true); loginReady(false); startCloud(); }
+else checkNotifs();
 if ("serviceWorker" in navigator && location.protocol === "https:" && !location.hostname.endsWith("claude.ai") && !location.hostname.endsWith("claudeusercontent.com")) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
