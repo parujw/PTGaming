@@ -1,0 +1,11 @@
+{
+  "name": "jarvis-handover",
+  "private": true,
+  "type": "module",
+  "description": "Jarvis ส่งเวร: voice-to-brief handover app for hotel Front Office",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.12.0",
+    "firebase-admin": "^12.7.0"
+  }
+}

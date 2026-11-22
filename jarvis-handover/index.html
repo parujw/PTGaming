@@ -1,0 +1,961 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Jarvis ส่งเวร</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#0e1524">
+<meta name="description" content="พูดครั้งเดียว ทั้งกะรู้เรื่อง: ส่งเวร Front Office ด้วยเสียง สรุปด้วย AI ส่งเข้ากลุ่ม LINE">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600&display=swap">
+<style>
+/* Layout: phone-first handover board. A deep "night" summary card with gold progress on top,
+   open items grouped by department as room tiles, glass night pill nav with a gold centre button
+   that fans out quick actions.
+   BRAND: change --gold / --gold-hi / --night here to match the hotel's brand guideline. */
+:root{
+  --gold:#b08a4f; --gold-hi:#dcc08d; --gold-ink:#8a6a35; --gold-soft:#f3ead9;
+  --night:#0e1524; --night-2:#1b2438; --night-ink:#c9d0de;
+  --bg:#f4f4f2; --card:#ffffff; --ink:#151821; --muted:#6c7280; --line:#e7e6e1;
+  --red:#d9473b; --red-ink:#b42318; --red-soft:#fbeae8;
+  --amber:#e08a00; --amber-ink:#a35f00; --amber-soft:#fdf1dc;
+  --green:#1f9d7a; --green-soft:#e2f4ee;
+  --scrim:rgba(14,21,36,.55); --shadow:0 1px 2px rgba(14,21,36,.04),0 8px 24px rgba(14,21,36,.06);
+  --f-display:"Anuphan","IBM Plex Sans Thai Looped",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Thai Looped","Noto Sans Thai",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --gold:#c9a46a; --gold-hi:#e6cc9b; --gold-ink:#e0c28c; --gold-soft:#2e2718;
+  --night:#121a2b; --night-2:#1f2a41; --night-ink:#c9d0de;
+  --bg:#0a0d13; --card:#141922; --ink:#eef0f4; --muted:#8f97a6; --line:#242b37;
+  --red:#ff6a5c; --red-ink:#ff8a7e; --red-soft:#3a1b18; --amber:#f5a524; --amber-ink:#f5b54a; --amber-soft:#35290f;
+  --green:#3cc39c; --green-soft:#11322a; --scrim:rgba(0,0,0,.62); --shadow:0 1px 2px rgba(0,0,0,.3);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --gold:#c9a46a; --gold-hi:#e6cc9b; --gold-ink:#e0c28c; --gold-soft:#2e2718;
+  --night:#121a2b; --night-2:#1f2a41; --night-ink:#c9d0de;
+  --bg:#0a0d13; --card:#141922; --ink:#eef0f4; --muted:#8f97a6; --line:#242b37;
+  --red:#ff6a5c; --red-ink:#ff8a7e; --red-soft:#3a1b18; --amber:#f5a524; --amber-ink:#f5b54a; --amber-soft:#35290f;
+  --green:#3cc39c; --green-soft:#11322a; --scrim:rgba(0,0,0,.62); --shadow:0 1px 2px rgba(0,0,0,.3);
+  color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:600px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 160px}
+
+/* header */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.eyebrow{color:var(--muted);font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sync{font-size:12px;padding:1px 9px;border-radius:99px;background:var(--line);color:var(--muted)}
+.sync.cloud{background:var(--green-soft);color:var(--green)}
+.top h1{font-size:32px;font-weight:700;line-height:1.15;letter-spacing:-.01em}
+.top-act{display:flex;gap:10px;align-items:center}
+.icon-btn{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--ink)}
+.icon-btn svg{width:22px;height:22px}
+.orb{position:relative;width:62px;height:62px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 35%,var(--night-2),var(--night) 72%);
+  box-shadow:0 0 0 2px var(--night),0 0 0 4px var(--gold),0 10px 28px rgba(176,138,79,.35)}
+.orb svg{width:28px;height:28px;color:var(--gold-hi)}
+.orb .dot{position:absolute;top:1px;right:1px;width:14px;height:14px;border-radius:50%;background:var(--red);border:2px solid var(--bg)}
+.orb.live{animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 2px var(--night),0 0 0 9px var(--gold-hi),0 10px 40px rgba(220,192,141,.6)}}
+
+/* hero summary (night card) */
+.hero{position:relative;overflow:hidden;border-radius:28px;padding:22px;color:#fff;
+  background:radial-gradient(120% 90% at 100% 0%,rgba(220,192,141,.22),transparent 55%),linear-gradient(160deg,var(--night-2),var(--night));
+  box-shadow:0 14px 40px rgba(14,21,36,.25)}
+.hero::after{content:"";position:absolute;inset:0;border-radius:inherit;border:1px solid rgba(220,192,141,.25);pointer-events:none}
+.hero-head{display:flex;justify-content:space-between;color:var(--night-ink);font-size:14px}
+.big{font-family:var(--f-display);font-size:56px;font-weight:700;line-height:1.05;margin:8px 0 14px;letter-spacing:-.02em}
+.big small{font-size:20px;font-weight:600;color:var(--gold-hi);margin-left:8px;letter-spacing:0}
+.bar{display:flex;gap:3px;height:10px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.1)}
+.bar i{display:block;height:100%}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.stat .k{display:flex;align-items:center;gap:6px;color:var(--night-ink);font-size:13px}
+.stat .v{font-family:var(--f-display);font-weight:700;font-size:22px}
+.d{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}
+.d.urgent{background:var(--red)} .d.follow{background:var(--amber)} .d.info{background:var(--green)} .d.done{background:var(--muted)}
+.cta{margin-top:18px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-radius:16px;font-family:var(--f-display);font-weight:700;font-size:16px;
+  color:#1b1406;background:linear-gradient(135deg,var(--gold-hi),var(--gold));box-shadow:0 6px 18px rgba(176,138,79,.35)}
+.cta svg{width:20px;height:20px}
+
+/* filters */
+.filters{display:flex;gap:8px;margin:20px 0 4px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.fchip{flex:none;padding:8px 14px;border-radius:99px;background:var(--card);border:1px solid var(--line);font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px}
+.fchip.on{background:var(--night);color:#fff;border-color:var(--night)}
+.search{flex:1;min-width:110px;display:flex;align-items:center;gap:6px;padding:0 12px;border-radius:99px;background:var(--card);border:1px solid var(--line)}
+.search input{border:0;background:none;font:inherit;color:var(--ink);width:100%;padding:8px 0;outline:none}
+.search svg{width:16px;height:16px;color:var(--muted);flex:none}
+
+/* sections + tiles */
+.group{margin-top:22px}
+.group-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.group-h h2{font-size:19px;font-weight:700}
+.group-h span{color:var(--muted);font-size:13px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:430px){.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tile{position:relative;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:14px 6px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;box-shadow:var(--shadow);transition:transform .12s}
+.tile:active{transform:scale(.97)}
+.tile b{font-family:var(--f-display);font-size:23px;font-weight:700;line-height:1.2}
+.tile .st{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tile .st.urgent{color:var(--red-ink);font-weight:600}
+.tile.urgent{border-color:color-mix(in srgb,var(--red) 35%,var(--line))}
+.tile.done{opacity:.45;box-shadow:none}
+.tile .vip{position:absolute;top:7px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.empty{color:var(--muted);text-align:center;padding:34px 10px}
+.exbar{margin-top:14px;font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.exbar button{color:var(--gold-ink);font-weight:600}
+
+/* nav */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;pointer-events:none;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.nav-in{max-width:600px;margin:0 auto;height:76px;border-radius:38px;display:grid;grid-template-columns:1fr 112px 1fr;align-items:center;pointer-events:auto;
+  background:color-mix(in srgb,var(--night) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 12px 32px rgba(14,21,36,.3)}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;color:#8d97ab;font-family:var(--f-display);font-weight:600;font-size:14px}
+.nav-btn.on{color:var(--gold-hi)}
+.nav-btn svg{width:25px;height:25px}
+.fab{justify-self:center;width:94px;height:94px;margin-top:-36px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  font-family:var(--f-display);font-weight:700;font-size:14px;color:#1b1406;border:6px solid var(--bg);
+  background:linear-gradient(145deg,var(--gold-hi),var(--gold));box-shadow:0 10px 26px rgba(176,138,79,.45);transition:transform .15s}
+.fab:active{transform:scale(.95)}
+.fab svg{width:30px;height:30px}
+.fab.open{background:#fff;color:var(--night)}
+
+/* radial */
+.scrim{position:fixed;inset:0;background:var(--scrim);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:20}
+.radial{position:fixed;left:50%;bottom:calc(118px + env(safe-area-inset-bottom,0px));width:350px;max-width:calc(100% - 24px);height:290px;transform:translateX(-50%);z-index:25}
+.rb{position:absolute;display:flex;flex-direction:column;align-items:center;gap:6px;color:#fff;font-family:var(--f-display);font-weight:600;font-size:14.5px;width:112px;margin-left:-56px;animation:pop .24s cubic-bezier(.2,.9,.3,1.3) both;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+.rb .c{width:66px;height:66px;border-radius:50%;background:#fff;color:var(--night);display:grid;place-items:center;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.rb.main .c{width:86px;height:86px;color:#1b1406;background:linear-gradient(145deg,var(--gold-hi),var(--gold))}
+.rb svg{width:27px;height:27px}
+.rb.main svg{width:34px;height:34px}
+@keyframes pop{from{opacity:0;transform:translateY(34px) scale(.5)}}
+
+/* sheet */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;max-height:92%;overflow:auto;overscroll-behavior:contain;background:var(--bg);border-radius:28px 28px 0 0;
+  padding:8px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  box-shadow:0 -12px 40px rgba(0,0,0,.25);animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}
+.sheet-in{max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.sheet-top{position:sticky;top:-8px;z-index:2;display:flex;justify-content:center;align-items:center;min-height:40px;margin:0 0 -6px;background:var(--bg)}
+.grab{width:44px;height:5px;border-radius:9px;background:var(--line)}
+.sheet-x{position:absolute;right:0;top:4px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--muted)}
+.sheet-x svg{width:18px;height:18px}
+.sheet h3{font-size:22px;font-weight:700}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row>.btn{align-self:stretch}
+.mic-zone{display:flex;flex-direction:column;align-items:center;gap:10px;padding:6px 0}
+.mic-zone .orb{width:110px;height:110px}
+.mic-zone .orb svg{width:44px;height:44px}
+.wave{display:flex;gap:4px;height:22px;align-items:center}
+.wave i{width:4px;border-radius:4px;background:var(--gold);height:6px}
+.live-wave .wave i{animation:wv 0.9s ease-in-out infinite}
+.wave i:nth-child(2){animation-delay:.1s}.wave i:nth-child(3){animation-delay:.2s}.wave i:nth-child(4){animation-delay:.3s}.wave i:nth-child(5){animation-delay:.4s}
+@keyframes wv{50%{height:22px}}
+.hint{color:var(--muted);font-size:13.5px;text-align:center;max-width:44ch}
+label.lab{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+textarea,input[type=text],input[type=time],input[type=password],select{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 15px}
+textarea{min-height:140px;resize:vertical}
+.partial{color:var(--gold-ink);font-style:italic;min-height:1.5em}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 16px;border-radius:16px;font-weight:700;font-family:var(--f-display);font-size:15.5px;flex:1;text-decoration:none;color:inherit}
+.btn.pri{color:#1b1406;background:linear-gradient(135deg,var(--gold-hi),var(--gold))}
+.btn.dark{background:var(--night);color:#fff}
+.btn.sec{background:var(--card);border:1px solid var(--line)}
+.btn.line{background:#06c755;color:#fff}
+.btn.danger{color:var(--red-ink);background:var(--red-soft)}
+.btn[disabled]{opacity:.5;cursor:default}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:6px 12px;border-radius:99px;background:var(--card);border:1px solid var(--line);font-size:13.5px}
+.chip.on.urgent{background:var(--red);border-color:var(--red);color:#fff}
+.chip.on.follow{background:var(--amber);border-color:var(--amber);color:#1b1406}
+.chip.on.info{background:var(--green);border-color:var(--green);color:#fff}
+.item{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 14px 14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:start}
+.item .rm{font-family:var(--f-display);font-weight:700;font-size:20px;min-width:50px}
+.item .tx{min-width:0}
+.item .tx p{margin:0}
+.item .act{color:var(--muted);font-size:14px}
+.item .x{color:var(--muted);font-size:22px;line-height:1;padding:2px 6px}
+.tag{font-size:12px;font-weight:600;padding:1px 9px;border-radius:99px;margin-right:6px;white-space:nowrap}
+.tag.urgent{background:var(--red-soft);color:var(--red-ink)} .tag.follow{background:var(--amber-soft);color:var(--amber-ink)} .tag.info{background:var(--green-soft);color:var(--green)}
+.tag.ex{background:var(--gold-soft);color:var(--gold-ink)}
+pre.brief{white-space:pre-wrap;word-break:break-word;margin:0;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;font-family:var(--f-body);font-size:14px;max-height:44vh;overflow:auto}
+.note{font-size:13px;color:var(--muted);margin:0}
+.err{font-size:13.5px;color:var(--red-ink);margin:0}
+.toast{position:fixed;left:50%;bottom:calc(108px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--night);color:#fff;padding:10px 18px;border-radius:99px;z-index:60;font-weight:600;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100% - 32px);text-align:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid2>*{min-width:0}
+
+/* briefs */
+.hist{display:flex;flex-direction:column;gap:12px}
+.bcard{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+.bmeta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:13px;flex-wrap:wrap}
+.bhead{font-family:var(--f-display);font-weight:700;font-size:17px}
+.acks{display:flex;gap:6px;flex-wrap:wrap}
+.ack{font-size:12.5px;padding:3px 10px;border-radius:99px;background:var(--green-soft);color:var(--green);font-weight:600}
+.ack.wait{background:var(--amber-soft);color:var(--amber-ink)}
+details.more summary{cursor:pointer;color:var(--gold-ink);font-size:13.5px;font-weight:600}
+
+/* solution */
+.sol h2{font-size:22px;margin:28px 0 10px}
+.sol p,.sol li{max-width:62ch}
+.sol ol,.sol ul{padding-left:1.2em;margin:6px 0}
+.sol .quote{background:linear-gradient(160deg,var(--night-2),var(--night));color:#fff;border-radius:24px;padding:22px}
+.sol .quote .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-hi);font-weight:600}
+.sol .quote .q{font-family:var(--f-display);font-size:26px;font-weight:700;line-height:1.3;margin:6px 0}
+.sol .quote p{color:var(--night-ink);margin:0}
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;text-align:center;font-size:13px}
+.flow div{background:var(--gold-soft);border-radius:14px;padding:10px 4px}
+.flow b{display:block;font-family:var(--f-display);font-size:15px;color:var(--gold-ink)}
+@media (max-width:440px){.flow{grid-template-columns:1fr 1fr}}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;width:100%;min-width:440px;font-size:14px}
+.tbl th,.tbl td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{color:var(--muted);font-weight:600}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- HOME -->
+  <section id="v-home">
+    <header class="top">
+      <div>
+        <div class="eyebrow"><span id="shiftLabel">กะเช้า → กะบ่าย</span><span class="sync" id="syncTag">เครื่องนี้</span></div>
+        <h1>ส่งเวร FO</h1>
+      </div>
+      <div class="top-act">
+        <button class="icon-btn" id="openSettings" aria-label="ตั้งค่า">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+        </button>
+        <button class="orb" id="orbHome" aria-label="พูดส่งเวร">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          <span class="dot" id="orbDot" hidden></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <div class="hero-head"><span>เรื่องที่ต้องส่งต่อ</span><span class="num" id="sumOf"></span></div>
+      <div class="big num" id="sumBig">0<small>เรื่องค้าง</small></div>
+      <div class="bar" id="sumBar"></div>
+      <div class="stats">
+        <div class="stat"><div class="k"><span class="d urgent"></span>ด่วน</div><div class="v num" id="stU">0</div></div>
+        <div class="stat"><div class="k"><span class="d follow"></span>ติดตาม</div><div class="v num" id="stF">0</div></div>
+        <div class="stat"><div class="k"><span class="d info"></span>แจ้งทราบ</div><div class="v num" id="stI">0</div></div>
+      </div>
+      <button class="cta" id="sendAll">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        สร้างบรีฟทั้งกะ
+      </button>
+    </div>
+
+    <div class="filters" role="toolbar" aria-label="กรองรายการ">
+      <button class="fchip on" data-f="open">ค้างอยู่</button>
+      <button class="fchip" data-f="urgent"><span class="d urgent"></span>ด่วน</button>
+      <button class="fchip" data-f="all">ทั้งหมด</button>
+      <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" inputmode="numeric" placeholder="เลขห้อง" aria-label="ค้นหาเลขห้อง"></label>
+    </div>
+    <div id="sections"></div>
+  </section>
+
+  <!-- BRIEFS -->
+  <section id="v-briefs" hidden>
+    <header class="top"><div><div class="eyebrow">ใครรับเวรแล้วบ้าง</div><h1>บรีฟที่ส่ง</h1></div></header>
+    <div class="hist" id="hist"></div>
+  </section>
+
+  <!-- SOLUTION -->
+  <section id="v-sol" class="sol" hidden>
+    <header class="top"><div><div class="eyebrow">ทำไมต้องมีแอปนี้ และทำงานอย่างไร</div><h1>แนวคิด</h1></div></header>
+    <div class="quote">
+      <div class="k">คำโปรย</div>
+      <div class="q">พูดครั้งเดียว ทั้งกะรู้เรื่อง</div>
+      <p>เล่า 30 วินาทีเหมือนเล่าให้เพื่อนฟัง Jarvis แยกเป็นรายการ จัดความด่วน ส่งเข้ากลุ่ม LINE และนับว่าใครรับเวรแล้ว</p>
+    </div>
+
+    <h2>1. ปัญหาจริงคืออะไร</h2>
+    <p>ไล่ด้วย 5 Whys แบบ Toyota จากอาการไปถึงราก</p>
+    <ol>
+      <li>ข้อมูลตกหล่นตอนส่งเวร</li>
+      <li>เพราะเรื่องค้างอยู่ในหัว กระดาษ logbook และแชทหลายห้อง</li>
+      <li>เพราะระหว่างกะไม่มีเวลานั่งพิมพ์ เรื่องเข้ามาตลอด</li>
+      <li>เพราะการจดต้องใช้มือและสายตา ซึ่งหน้าเคาน์เตอร์ต้องใช้กับแขก</li>
+      <li>เพราะไม่มีรูปแบบกลาง และไม่มีการยืนยันว่าอีกฝ่ายรับเวรแล้ว</li>
+    </ol>
+    <p><strong>ทางแก้:</strong> จดด้วยเสียงได้ในไม่กี่วินาที ทุกเรื่องมีโครงเดียวกัน และปิดลูปด้วยการตอบ “รับ”</p>
+
+    <h2>2. โครงบรีฟ</h2>
+    <p>ยืมหลัก I-PASS ที่โรงพยาบาลใช้ส่งเวรผู้ป่วยมาปรับกับงาน Front Office และแบ่งหมวดแบบ MECE คือไม่ซ้อนกันและครอบคลุม</p>
+    <div class="tbl"><table>
+      <tr><th>ช่อง</th><th>ความหมาย</th><th>ตัวอย่าง</th></tr>
+      <tr><td>ห้อง / แขก</td><td>ใคร อยู่ไหน</td><td>1208 คุณ T. (VIP)</td></tr>
+      <tr><td>ความด่วน</td><td>ด่วน · ติดตาม · แจ้งทราบ</td><td>ด่วน</td></tr>
+      <tr><td>สถานการณ์</td><td>เกิดอะไรขึ้น 1 ประโยค</td><td>แอร์ไม่เย็น แขกโทรมา 2 ครั้ง</td></tr>
+      <tr><td>สิ่งที่ต้องทำ</td><td>ขั้นถัดไปที่ชัดเจน</td><td>ตามช่าง ถ้าไม่เสร็จเสนอย้ายห้อง</td></tr>
+      <tr><td>ภายใน</td><td>เส้นตาย</td><td>16:00</td></tr>
+    </table></div>
+
+    <h2>3. ลำดับการใช้งาน</h2>
+    <div class="flow">
+      <div><b>แตะ</b>ปุ่มทอง</div>
+      <div><b>พูด</b>เล่าสบาย ๆ</div>
+      <div><b>ตรวจ</b>แก้ 1 แตะ</div>
+      <div><b>ส่ง</b>เข้ากลุ่ม LINE</div>
+      <div><b>รับ</b>เพื่อนตอบ “รับ”</div>
+    </div>
+    <p>เรื่องที่ยังไม่ปิดค้างอยู่บนบอร์ด ตอนเลิกกะกด “สร้างบรีฟทั้งกะ” ได้บรีฟเต็มทันที เรื่องที่ปิดแล้วไม่ถูกส่งซ้ำ</p>
+
+    <h2>4. ข้อความ</h2>
+    <p>ตามหลัก Ogilvy คนอ่านหัวข้อมากกว่าเนื้อหา บรีฟจึงขึ้นด้วยจำนวนเรื่องด่วนในบรรทัดแรก คนที่เห็นแค่ notification ก็รู้ว่าต้องรีบเปิดไหม ปุ่มทุกปุ่มเป็นคำกริยาที่บอกผล เช่น “ปิดเรื่องนี้”</p>
+
+    <h2>5. ข้อควรระวัง</h2>
+    <ul>
+      <li><strong>PDPA:</strong> บรีฟใช้เลขห้องและนามสกุลย่อ ไม่ใส่เบอร์โทร เลขพาสปอร์ต หรือข้อมูลบัตร</li>
+      <li>ใช้กลุ่ม LINE ที่บริษัทอนุญาต และตรวจนโยบาย IT ก่อนใช้จริง</li>
+      <li>AI สรุปผิดได้ ทุกบรีฟจึงมีหน้าตรวจก่อนส่ง</li>
+    </ul>
+
+    <h2>6. วัดผล</h2>
+    <ul>
+      <li>เรื่องตกหล่นต่อสัปดาห์ (complaint ที่ “ไม่มีใครรู้มาก่อน”)</li>
+      <li>เวลาส่งเวร เป้าไม่เกิน 3 นาที</li>
+      <li>สัดส่วนบรีฟที่มีคนตอบ “รับ” ภายใน 10 นาที</li>
+    </ul>
+  </section>
+</div>
+
+<nav class="nav" aria-label="เมนูหลัก">
+  <div class="nav-in">
+    <button class="nav-btn" data-view="briefs" id="navBriefs">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10v18l-2.5-1.5L12 21l-2.5-1.5L7 21z"/><path d="M10 8h4M10 12h4"/></svg>
+      บรีฟที่ส่ง
+    </button>
+    <button class="fab" id="fab" aria-label="เปิดเมนูด่วน">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" id="fabIco"><path d="M4 10.5 12 4l8 6.5V20h-5v-5h-6v5H4z"/></svg>
+      <span id="fabTxt">หน้าแรก</span>
+    </button>
+    <button class="nav-btn" data-view="sol" id="navSol">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>
+      แนวคิด
+    </button>
+  </div>
+</nav>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="radial" id="radial" hidden></div>
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"><div class="sheet-in" id="sheetIn"></div></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script src="config.js" onerror="void 0"></script>
+<script>
+(() => {
+"use strict";
+const CFG = Object.assign({ teamId: "fo", firebase: null }, window.JARVIS_CONFIG || {});
+
+const CATS = [
+  { id: "vip", name: "VIP & Arrival" },
+  { id: "room", name: "ห้องพัก / Housekeeping" },
+  { id: "complaint", name: "Complaint" },
+  { id: "maint", name: "ซ่อมบำรุง" },
+  { id: "billing", name: "Billing / Cashier" },
+  { id: "lost", name: "Lost & Found" },
+  { id: "other", name: "อื่น ๆ" },
+];
+const CAT_NAME = Object.fromEntries(CATS.map(c => [c.id, c.name]));
+const PRI = { urgent: "ด่วน", follow: "ติดตาม", info: "แจ้งทราบ" };
+const PRI_ICON = { urgent: "🔴", follow: "🟡", info: "🟢" };
+const ORDER = { urgent: 0, follow: 1, info: 2 };
+
+const EXAMPLES = [
+  { room: "1208", guest: "คุณ T. (VIP)", cat: "vip", pri: "urgent", summary: "VIP มาถึง 15:30 ขอ welcome amenity แบบไม่มีถั่ว", action: "ยืนยันกับ F&B และ HK ว่า amenity เข้าห้องก่อน 15:00", due: "15:00" },
+  { room: "915", guest: "คุณ S.", cat: "complaint", pri: "urgent", summary: "แอร์ไม่เย็น แขกโทรมา 2 ครั้ง ไม่พอใจ", action: "ตามช่างอีกรอบ ถ้าไม่เสร็จใน 30 นาทีเสนอย้ายห้อง", due: "14:30" },
+  { room: "1502", guest: "คุณ M.", cat: "room", pri: "follow", summary: "ขอ late check-out 16:00 อนุมัติแล้ว", action: "แจ้ง HK เลื่อนทำห้อง", due: "" },
+  { room: "712", guest: "", cat: "maint", pri: "follow", summary: "ฝักบัวน้ำรั่ว ช่างรับเรื่องแล้ว", action: "เช็กสถานะก่อนขายห้องคืน", due: "18:00" },
+  { room: "1104", guest: "คุณ K.", cat: "billing", pri: "follow", summary: "มัดจำบัตรยังไม่ผ่าน", action: "ขอบัตรใบใหม่หรือเงินสดตอนแขกกลับเข้าห้อง", due: "" },
+  { room: "—", guest: "", cat: "lost", pri: "info", summary: "พบแว่นกันแดดที่ล็อบบี้ เก็บไว้ที่ Concierge", action: "", due: "" },
+  { room: "803", guest: "คุณ P. (VIP)", cat: "vip", pri: "info", summary: "ครบรอบแต่งงาน จัดเค้กแล้ว", action: "", due: "" },
+].map((x, i) => ({ ...x, id: "ex" + i, done: i === 6, ex: true, createdAt: Date.now() - (7 - i) * 6e5, by: "ตัวอย่าง" }));
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const fmt = t => new Date(t).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+function toast(t) { const el = $("#toast"); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 2600); }
+
+// ---------------- prefs (this device) ----------------
+const PKEY = "jarvis-prefs-v2";
+let P = { name: "", from: "กะเช้า", to: "กะบ่าย", pin: "", filter: "open" };
+try { Object.assign(P, JSON.parse(localStorage.getItem(PKEY) || "{}")); } catch (e) {}
+const savePrefs = () => { try { localStorage.setItem(PKEY, JSON.stringify(P)); } catch (e) {} };
+
+// ---------------- data store: local or Firestore ----------------
+let ITEMS = [], BRIEFS = [];
+const listeners = new Set();
+const emit = () => listeners.forEach(f => f());
+
+const LocalStore = (() => {
+  const KEY = "jarvis-data-v2";
+  let d = { items: EXAMPLES, briefs: [] };
+  try { const raw = localStorage.getItem(KEY); if (raw) d = JSON.parse(raw); } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} ITEMS = d.items; BRIEFS = d.briefs; emit(); };
+  return {
+    mode: "local",
+    start() { ITEMS = d.items; BRIEFS = d.briefs; emit(); },
+    async addItems(list) { d.items = [...list, ...d.items]; save(); },
+    async updateItem(id, patch) { d.items = d.items.map(i => i.id === id ? { ...i, ...patch } : i); save(); },
+    async deleteItem(id) { d.items = d.items.filter(i => i.id !== id); save(); },
+    async clearExamples() { d.items = d.items.filter(i => !i.ex); save(); },
+    async addBrief(b) { const id = uid(); d.briefs = [{ id, ...b }, ...d.briefs].slice(0, 40); save(); return id; },
+    async ackBrief(id, ack) { d.briefs = d.briefs.map(b => b.id === id ? { ...b, acks: [...(b.acks || []), ack] } : b); save(); },
+    async patchBrief(id, patch) { d.briefs = d.briefs.map(b => b.id === id ? { ...b, ...patch } : b); save(); },
+  };
+})();
+
+let store = LocalStore;
+let fb = null; // { auth, user, db, fs }
+
+async function startCloud() {
+  if (!CFG.firebase) return;
+  try {
+    const V = "10.12.2";
+    const [appM, authM, fs] = await Promise.all([
+      import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`),
+      import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`),
+      import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`),
+    ]);
+    const app = appM.initializeApp(CFG.firebase);
+    const auth = authM.getAuth(app);
+    const db = fs.getFirestore(app);
+    fb = { auth, authM, db, fs, user: null };
+    authM.getRedirectResult(auth).catch(() => {});
+    authM.onAuthStateChanged(auth, user => {
+      fb.user = user;
+      if (user) useCloud(); else { store = LocalStore; store.start(); }
+      renderSync();
+    });
+  } catch (e) {
+    console.warn("Firebase unavailable", e);
+  }
+}
+
+let unsub = [];
+function useCloud() {
+  const { db, fs } = fb;
+  const base = `teams/${CFG.teamId}`;
+  const itemsCol = fs.collection(db, base, "items");
+  const briefsCol = fs.collection(db, base, "briefs");
+  unsub.forEach(u => u()); unsub = [];
+  store = {
+    mode: "cloud",
+    start() {},
+    async addItems(list) {
+      const batch = fs.writeBatch(db);
+      list.forEach(it => { const { id, ...rest } = it; batch.set(fs.doc(itemsCol, id), rest); });
+      await batch.commit();
+    },
+    updateItem: (id, patch) => fs.updateDoc(fs.doc(itemsCol, id), patch),
+    deleteItem: id => fs.deleteDoc(fs.doc(itemsCol, id)),
+    async clearExamples() {},
+    async addBrief(b) { const id = uid(); await fs.setDoc(fs.doc(briefsCol, id), b); return id; },
+    ackBrief: (id, ack) => fs.updateDoc(fs.doc(briefsCol, id), { acks: fs.arrayUnion(ack) }),
+    patchBrief: (id, patch) => fs.updateDoc(fs.doc(briefsCol, id), patch),
+  };
+  const fail = e => { console.warn(e); toast(e.code === "permission-denied" ? "บัญชีนี้ยังไม่อยู่ในทีม ให้หัวหน้าเพิ่มอีเมลก่อน" : "เชื่อมต่อฐานข้อมูลไม่ได้"); };
+  unsub.push(fs.onSnapshot(fs.query(itemsCol, fs.orderBy("createdAt", "desc"), fs.limit(400)),
+    snap => { ITEMS = snap.docs.map(d => ({ id: d.id, ...d.data() })); emit(); }, fail));
+  unsub.push(fs.onSnapshot(fs.query(briefsCol, fs.orderBy("at", "desc"), fs.limit(40)),
+    snap => { BRIEFS = snap.docs.map(d => ({ id: d.id, ...d.data() })); emit(); }, fail));
+}
+
+async function signIn() {
+  const { auth, authM } = fb;
+  const prov = new authM.GoogleAuthProvider();
+  try { await authM.signInWithPopup(auth, prov); }
+  catch (e) { if (/popup/.test(e.code || "")) await authM.signInWithRedirect(auth, prov); else toast("เข้าสู่ระบบไม่สำเร็จ"); }
+}
+
+// ---------------- server features ----------------
+let SERVER = { ai: false, linePush: false, pin: false };
+fetch("api/config", { cache: "no-store" }).then(r => r.ok ? r.json() : {}).then(j => { SERVER = { ...SERVER, ...j }; }).catch(() => {});
+
+async function api(path, body) {
+  const headers = { "content-type": "application/json" };
+  if (fb?.user) headers.authorization = "Bearer " + await fb.user.getIdToken();
+  else if (P.pin) headers["x-team-pin"] = P.pin;
+  const r = await fetch("api/" + path, { method: "POST", headers, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || "เซิร์ฟเวอร์ตอบ " + r.status);
+  return j;
+}
+
+// ---------------- voice: Claude dictation, Web Speech, or keyboard ----------------
+let claudeDict = null, claudeSample = null;
+(async () => {
+  if (!window.claude?.use) return;
+  try { claudeDict = await window.claude.use("dictation"); } catch (e) {}
+  try { claudeSample = await window.claude.use("sample"); } catch (e) {}
+  if (claudeDict) {
+    claudeDict.onFinal(({ text }) => voice.onFinal(text));
+    claudeDict.onPartial(({ text }) => voice.onPartial(text));
+    claudeDict.onState(({ state, reason }) => {
+      voice.setLive(state !== "idle");
+      if (state === "idle" && reason === "not_granted") toast("ไมค์ถูกปิดไว้ พิมพ์แทนได้");
+      if (state === "idle" && reason === "unavailable") { claudeDict = null; renderMicHint(); }
+    });
+  }
+  renderMicHint();
+})();
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const voice = {
+  live: false, want: false, rec: null,
+  available() { return !!(claudeDict || SR); },
+  onFinal(text) { const ta = $("#note"); if (!ta) return; const t = String(text); ta.value = ta.value ? (ta.value.replace(/\s+$/, "") + " " + t.trim()) : t.trim(); const p = $("#partial"); if (p) p.textContent = ""; },
+  onPartial(text) { const p = $("#partial"); if (p) p.textContent = text; },
+  setLive(on) {
+    this.live = on;
+    document.querySelectorAll(".orb").forEach(o => o.classList.toggle("live", on));
+    const z = $(".mic-zone"); if (z) z.classList.toggle("live-wave", on);
+    const b = $("#micTxt"); if (b) b.textContent = on ? "กำลังฟัง แตะเพื่อหยุด" : "แตะเพื่อพูด";
+  },
+  start() { // must be called inside a click
+    if (claudeDict) {
+      claudeDict.start({ language: "th" }).catch(e => {
+        if (e.code === "unavailable") claudeDict.start().catch(() => {});
+        else if (e.code === "not_granted") toast("ไม่ได้รับอนุญาตใช้ไมค์ พิมพ์แทนได้");
+      });
+      return;
+    }
+    if (!SR) return;
+    this.want = true;
+    const rec = this.rec = new SR();
+    rec.lang = "th-TH"; rec.continuous = true; rec.interimResults = true;
+    rec.onresult = ev => {
+      let interim = "";
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const r = ev.results[i];
+        if (r.isFinal) this.onFinal(r[0].transcript); else interim += r[0].transcript;
+      }
+      this.onPartial(interim);
+    };
+    rec.onerror = e => { if (e.error === "not-allowed" || e.error === "service-not-allowed") { this.want = false; toast("เบราว์เซอร์ไม่อนุญาตไมค์ พิมพ์หรือใช้ไมค์ของคีย์บอร์ดแทน"); } };
+    rec.onend = () => { if (this.want) { try { rec.start(); return; } catch (e) {} } this.setLive(false); };
+    try { rec.start(); this.setLive(true); } catch (e) { this.setLive(false); }
+  },
+  async stop() {
+    this.want = false;
+    if (claudeDict?.active()) { await claudeDict.stop().catch(() => {}); return; }
+    if (this.rec) { try { this.rec.stop(); } catch (e) {} this.rec = null; }
+    this.setLive(false);
+  },
+};
+
+// ---------------- render ----------------
+let view = "home";
+function renderSync() {
+  const tag = $("#syncTag");
+  if (store.mode === "cloud") { tag.textContent = "ทีม · ซิงก์แล้ว"; tag.className = "sync cloud"; }
+  else { tag.textContent = "เครื่องนี้"; tag.className = "sync"; }
+}
+function render() {
+  const open = ITEMS.filter(i => !i.done);
+  const c = p => open.filter(i => i.pri === p).length;
+  const total = ITEMS.length, doneN = total - open.length;
+  $("#shiftLabel").textContent = `${P.from} → ${P.to}`;
+  $("#sumBig").innerHTML = `${open.length}<small>เรื่องค้าง</small>`;
+  $("#sumOf").textContent = total ? `ปิดแล้ว ${doneN} จาก ${total}` : "";
+  $("#stU").textContent = c("urgent"); $("#stF").textContent = c("follow"); $("#stI").textContent = c("info");
+  $("#orbDot").hidden = c("urgent") === 0;
+  const seg = (n, col) => n ? `<i style="flex:${n};background:${col}"></i>` : "";
+  $("#sumBar").innerHTML = seg(doneN, "var(--gold-hi)") + seg(c("info"), "var(--green)") + seg(c("follow"), "var(--amber)") + seg(c("urgent"), "var(--red)");
+
+  document.querySelectorAll(".fchip").forEach(b => b.classList.toggle("on", b.dataset.f === P.filter));
+  const q = ($("#q").value || "").trim();
+  let list = ITEMS;
+  if (P.filter === "open") list = list.filter(i => !i.done);
+  if (P.filter === "urgent") list = list.filter(i => !i.done && i.pri === "urgent");
+  if (q) list = list.filter(i => String(i.room).includes(q));
+
+  let html = "";
+  if (ITEMS.some(i => i.ex)) html += `<div class="exbar"><span class="tag ex">ตัวอย่าง</span>รายการตอนนี้เป็นข้อมูลสมมติ <button id="clearEx">ล้างตัวอย่าง</button></div>`;
+  for (const cat of CATS) {
+    const l = list.filter(i => i.cat === cat.id).sort((a, b) => (a.done - b.done) || (ORDER[a.pri] - ORDER[b.pri]));
+    if (!l.length) continue;
+    const left = ITEMS.filter(i => i.cat === cat.id && !i.done).length;
+    html += `<div class="group"><div class="group-h"><h2>${esc(cat.name)}</h2><span>${left ? `ค้าง ${left}` : "ครบแล้ว"}</span></div><div class="tiles">`;
+    for (const it of l) {
+      const st = it.done ? `<span class="d done"></span>ปิดแล้ว` : `<span class="d ${it.pri}"></span>${PRI[it.pri]}${it.due ? " " + esc(it.due) : ""}`;
+      html += `<button class="tile ${it.done ? "done" : it.pri}" data-id="${esc(it.id)}">${/VIP/i.test(it.guest) ? '<span class="vip" aria-label="VIP"></span>' : ""}<b class="num">${esc(it.room || "—")}</b><span class="st ${it.done ? "" : it.pri}">${st}</span></button>`;
+    }
+    html += `</div></div>`;
+  }
+  if (!list.length) html += `<div class="empty">${ITEMS.length ? (q ? "ไม่พบห้องนี้" : "ไม่มีเรื่องค้าง กะนี้เคลียร์แล้ว") : "ยังไม่มีเรื่องในกะนี้<br>แตะปุ่มทองด้านล่าง แล้วเลือก “พูดส่งเวร”"}</div>`;
+  $("#sections").innerHTML = html;
+  renderBriefs();
+}
+listeners.add(render);
+
+function renderBriefs() {
+  const el = $("#hist");
+  if (!BRIEFS.length) { el.innerHTML = `<div class="empty">ยังไม่มีบรีฟ<br>บรีฟที่ส่งหรือคัดลอกจะเก็บไว้ที่นี่ พร้อมรายชื่อคนที่รับเวรแล้ว</div>`; return; }
+  el.innerHTML = BRIEFS.map(b => {
+    const acks = b.acks || [];
+    const ackHtml = acks.length ? acks.map(a => `<span class="ack">✓ ${esc(a.name)} · ${new Date(a.at).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}</span>`).join("") : `<span class="ack wait">ยังไม่มีคนรับเวร</span>`;
+    return `<article class="bcard">
+      <div class="bmeta"><span>${esc(fmt(b.at))} · ${esc(b.by || "-")}</span><span>${b.n} เรื่อง${b.urgent ? ` · ด่วน ${b.urgent}` : ""}${b.via ? " · " + esc(b.via) : ""}</span></div>
+      <div class="bhead">${esc(b.title || "บรีฟ")} · ${esc(b.from || "")} → ${esc(b.to || "")}</div>
+      <div class="acks">${ackHtml}</div>
+      <details class="more"><summary>ดูข้อความ</summary><pre class="brief" style="margin-top:8px">${esc(b.text)}</pre></details>
+      <div class="row"><button class="btn sec" data-copy="${esc(b.id)}">คัดลอก</button><button class="btn dark" data-ack="${esc(b.id)}">ฉันรับเวรแล้ว</button></div>
+    </article>`;
+  }).join("");
+}
+
+document.addEventListener("click", e => {
+  const t = e.target.closest(".tile"); if (t) return openItem(t.dataset.id);
+  const f = e.target.closest(".fchip"); if (f) { P.filter = f.dataset.f; savePrefs(); return render(); }
+  if (e.target.id === "clearEx") { store.clearExamples(); toast("ล้างข้อมูลตัวอย่างแล้ว"); return; }
+  const cp = e.target.closest("[data-copy]"); if (cp) { const b = BRIEFS.find(x => x.id === cp.dataset.copy); if (b) copy(b.text); return; }
+  const ak = e.target.closest("[data-ack]"); if (ak) {
+    if (!P.name) { toast("ใส่ชื่อของคุณในตั้งค่าก่อน"); return openSettings(); }
+    const b = BRIEFS.find(x => x.id === ak.dataset.ack);
+    if (b && (b.acks || []).some(a => a.name === P.name)) return toast("คุณรับเวรนี้แล้ว");
+    store.ackBrief(ak.dataset.ack, { name: P.name, at: Date.now(), via: "app" }).then(() => toast("บันทึกว่ารับเวรแล้ว"));
+  }
+});
+$("#q").addEventListener("input", render);
+
+// ---------------- views & nav ----------------
+function show(v) {
+  view = v;
+  ["home", "briefs", "sol"].forEach(x => $("#v-" + x).hidden = x !== v);
+  $("#navBriefs").classList.toggle("on", v === "briefs");
+  $("#navSol").classList.toggle("on", v === "sol");
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll(".nav-btn").forEach(b => b.onclick = () => { closeAll(); show(b.dataset.view); });
+
+const IC = {
+  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',
+  alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M12 8v3M12 13.5v.5"/></svg>',
+  wrench: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 15h4"/></svg>',
+  home: '<path d="M4 10.5 12 4l8 6.5V20h-5v-5h-6v5H4z"/>',
+  x: '<path d="M6 6l12 12M18 6 6 18"/>',
+};
+const RADIAL = [
+  { x: 12, y: 210, ic: "card", t: "Billing", cat: "billing" },
+  { x: 28, y: 108, ic: "star", t: "VIP มาถึง", cat: "vip" },
+  { x: 50, y: 6, ic: "mic", t: "พูดส่งเวร", cat: null, main: true },
+  { x: 72, y: 108, ic: "alert", t: "Complaint", cat: "complaint" },
+  { x: 88, y: 210, ic: "wrench", t: "แจ้งซ่อม", cat: "maint" },
+];
+let radialOpen = false;
+function toggleRadial(force) {
+  radialOpen = force ?? !radialOpen;
+  $("#radial").hidden = !radialOpen;
+  $("#scrim").hidden = !radialOpen && $("#sheet").hidden;
+  $("#fab").classList.toggle("open", radialOpen);
+  $("#fabTxt").hidden = radialOpen;
+  $("#fabIco").innerHTML = radialOpen ? IC.x : IC.home;
+  $("#fab").setAttribute("aria-label", radialOpen ? "ปิดเมนูด่วน" : "เปิดเมนูด่วน");
+  if (radialOpen) {
+    $("#radial").innerHTML = RADIAL.map((r, i) => `<button class="rb ${r.main ? "main" : ""}" style="left:${r.x}%;top:${r.y}px;animation-delay:${i * 35}ms" data-i="${i}"><span class="c">${IC[r.ic]}</span>${r.t}</button>`).join("");
+    $("#radial").querySelectorAll(".rb").forEach(b => b.onclick = () => { const r = RADIAL[+b.dataset.i]; toggleRadial(false); openRecorder(r.cat, true); });
+  }
+}
+$("#fab").onclick = () => {
+  if (!$("#sheet").hidden) { closeAll(); return; }
+  if (view !== "home" && !radialOpen) show("home");
+  toggleRadial();
+};
+$("#scrim").onclick = closeAll;
+$("#orbHome").onclick = () => openRecorder(null, true);
+$("#openSettings").onclick = () => openSettings();
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeAll(); });
+
+function closeAll() { if (radialOpen) toggleRadial(false); $("#sheet").hidden = true; $("#scrim").hidden = true; if (voice.live || voice.want) voice.stop(); }
+function openSheet(html) { $("#sheetIn").innerHTML = `<div class="sheet-top"><div class="grab"></div><button class="sheet-x" id="sheetX" aria-label="ปิด">${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">' + IC.x + '</svg>'}</button></div>` + html; $("#sheetX").onclick = closeAll; $("#sheet").hidden = false; $("#scrim").hidden = false; $("#sheet").scrollTop = 0; }
+
+// ---------------- recorder ----------------
+let hintCat = null;
+function renderMicHint() {
+  const h = $("#micHint"); if (!h) return;
+  h.textContent = voice.available() ? "เล่าแบบสบาย ๆ หลายห้องในครั้งเดียวได้" : "เบราว์เซอร์นี้ฟังเสียงเองไม่ได้ ใช้ปุ่มไมค์บนคีย์บอร์ดมือถือพูดลงช่องด้านล่างแทนได้";
+  const m = $("#micBtn"); if (m) m.disabled = !voice.available();
+}
+function openRecorder(cat, autoStart, keepText) {
+  hintCat = cat;
+  openSheet(`
+    <h3>${cat ? "เพิ่มเรื่อง: " + esc(CAT_NAME[cat]) : "พูดส่งเวร"}</h3>
+    <div class="mic-zone">
+      <button class="orb" id="micBtn" aria-label="เริ่มหรือหยุดฟัง">${IC.mic}</button>
+      <div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <strong id="micTxt">แตะเพื่อพูด</strong>
+      <div class="hint" id="micHint"></div>
+    </div>
+    <div class="partial" id="partial" aria-live="polite"></div>
+    <div><label for="note" class="lab">ข้อความที่จับได้ แก้ได้ก่อนส่งให้ Jarvis</label>
+    <textarea id="note" placeholder="เช่น ห้อง 1208 VIP มาสามโมงครึ่ง ขอ amenity ไม่มีถั่ว ต้องเช็ก F&B ก่อนบ่ายสาม แล้วก็ 915 แอร์ไม่เย็นแขกโทรมาสองรอบ ตามช่างอีกที ถ้าไม่ได้ย้ายห้อง"></textarea></div>
+    <div class="row"><button class="btn sec" id="cancelRec">ยกเลิก</button><button class="btn pri" id="goAI">ให้ Jarvis สรุป</button></div>
+    <p class="note" id="aiNote"></p>`);
+  if (keepText) $("#note").value = keepText;
+  renderMicHint();
+  voice.setLive(voice.live);
+  $("#micBtn").onclick = () => { if (voice.live) voice.stop(); else voice.start(); };
+  if (autoStart && voice.available()) voice.start();
+  $("#cancelRec").onclick = closeAll;
+  $("#goAI").onclick = runAI;
+}
+
+async function runAI() {
+  await voice.stop();
+  const text = $("#note").value.trim();
+  if (!text) { toast("ยังไม่มีข้อความ ลองพูดหรือพิมพ์ก่อน"); return; }
+  const btn = $("#goAI"); btn.disabled = true; btn.textContent = "Jarvis กำลังสรุป…";
+  const note = $("#aiNote");
+  let items = null;
+  try {
+    if (claudeSample) {
+      const out = await claudeSample.json(PROMPT(text, hintCat), { modelTier: "default" });
+      items = (Array.isArray(out) ? out : out.items || []);
+    } else if (SERVER.ai) {
+      items = (await api("summarize", { text, hintCat })).items;
+    }
+  } catch (e) {
+    note.textContent = (e.message || "Claude ไม่ตอบ") + " ใช้ตัวแยกแบบพื้นฐานแทน";
+    items = null;
+  }
+  if (!items) items = heuristic(text, hintCat);
+  else if (!items.length) { btn.disabled = false; btn.textContent = "ให้ Jarvis สรุป"; note.textContent = "ไม่พบเรื่องที่ต้องส่งต่อในข้อความนี้"; return; }
+  review(items.map(normalize), text);
+}
+
+function PROMPT(text, cat) {
+  return `คุณคือผู้ช่วยส่งเวร Front Office โรงแรม 5 ดาวในกรุงเทพฯ
+แปลงข้อความที่พนักงานพูด (ไทยปนอังกฤษ อาจมีคำฟุ่มเฟือยหรือถอดเสียงผิด) เป็นรายการส่งเวร 1 เรื่องต่อ 1 รายการ
+${cat ? `หมวดเริ่มต้นที่ผู้ใช้เลือก: "${cat}" ใช้เมื่อไม่ชัดเจน\n` : ""}ตอบเป็น JSON object รูปแบบ {"items":[...]} เท่านั้น แต่ละรายการมี:
+- room: เลขห้อง ถ้าไม่มีใช้ "—"
+- guest: ชื่อแขกแบบย่อ เช่น "คุณ T." ใส่ "(VIP)" ถ้าเป็น VIP ไม่มีให้ "" (PDPA: ห้ามชื่อเต็ม เบอร์โทร เลขบัตร)
+- cat: vip | room | complaint | maint | billing | lost | other
+- pri: urgent (ต้องทำทันทีหรือแขกไม่พอใจ) | follow (ต้องติดตาม) | info (แจ้งทราบ)
+- summary: สถานการณ์ 1 ประโยคสั้น
+- action: สิ่งที่กะถัดไปต้องทำ ขึ้นต้นด้วยคำกริยา ไม่มีให้ ""
+- due: HH:MM ถ้ามีเส้นตาย ไม่มีให้ ""
+ห้ามแต่งข้อมูลที่ไม่ได้พูด
+
+ข้อความ:
+"""${text}"""`;
+}
+function normalize(x) {
+  return {
+    id: uid(), room: String(x.room || "—").slice(0, 10), guest: String(x.guest || "").slice(0, 40),
+    cat: CAT_NAME[x.cat] ? x.cat : "other", pri: PRI[x.pri] ? x.pri : "follow",
+    summary: String(x.summary || "").slice(0, 300), action: String(x.action || "").slice(0, 300),
+    due: /^\d{1,2}:\d{2}$/.test(x.due || "") ? x.due.padStart(5, "0") : "", done: false,
+  };
+}
+function heuristic(text, cat) {
+  const parts = text.split(/\n+|แล้วก็|อีกเรื่อง|ต่อมา|นอกจากนี้|(?=ห้อง\s*\d{3,4})/).map(s => (s || "").trim()).filter(s => s.length > 3);
+  return (parts.length ? parts : [text]).map(p => {
+    const room = (p.match(/(\d{3,4})/) || [])[1] || "—";
+    let c = cat || "other";
+    if (!cat) {
+      if (/vip|arrival|มาถึง|เช็คอิน|check.?in/i.test(p)) c = "vip";
+      else if (/ร้องเรียน|complain|ไม่พอใจ|บ่น|โวย/i.test(p)) c = "complaint";
+      else if (/ซ่อม|แอร์|รั่ว|ไฟดับ|ช่าง|เสีย/i.test(p)) c = "maint";
+      else if (/บิล|มัดจำ|เงิน|บัตร|จ่าย|deposit|bill/i.test(p)) c = "billing";
+      else if (/ของหาย|ลืม|lost|found|เก็บได้/i.test(p)) c = "lost";
+      else if (/late|แม่บ้าน|ทำความสะอาด|upgrade|ห้อง/i.test(p)) c = "room";
+    }
+    const pri = /ด่วน|ทันที|รีบ|ไม่พอใจ|โวย|urgent/i.test(p) ? "urgent" : /แจ้งไว้|ให้ทราบ/.test(p) ? "info" : "follow";
+    const due = p.match(/\b(\d{1,2})[:.](\d{2})\b/);
+    return { room, guest: "", cat: c, pri, summary: p.replace(/^(ห้อง)?\s*\d{3,4}\s*/, "").slice(0, 160), action: "", due: due ? `${due[1]}:${due[2]}` : "" };
+  });
+}
+
+// ---------------- review ----------------
+function review(items, sourceText) {
+  let pending = items;
+  const draw = () => {
+    $("#revList").innerHTML = pending.map((it, i) => `
+      <div class="item">
+        <div class="rm num">${esc(it.room)}</div>
+        <div class="tx"><p>${esc(it.guest)} ${esc(it.summary)}</p>${it.action ? `<p class="act">→ ${esc(it.action)}${it.due ? " · ภายใน " + esc(it.due) : ""}</p>` : (it.due ? `<p class="act">ภายใน ${esc(it.due)}</p>` : "")}
+          <div class="chips" style="margin-top:8px">${Object.keys(PRI).map(p => `<button class="chip ${p} ${p === it.pri ? "on" : ""}" data-i="${i}" data-p="${p}">${PRI[p]}</button>`).join("")}<span class="note" style="align-self:center">${esc(CAT_NAME[it.cat])}</span></div></div>
+        <button class="x" data-del="${i}" aria-label="ลบรายการนี้">×</button>
+      </div>`).join("") || `<div class="empty">ไม่มีรายการเหลือ</div>`;
+    $("#revList").querySelectorAll("[data-p]").forEach(b => b.onclick = () => { pending[+b.dataset.i].pri = b.dataset.p; draw(); });
+    $("#revList").querySelectorAll("[data-del]").forEach(b => b.onclick = () => { pending.splice(+b.dataset.del, 1); draw(); });
+  };
+  openSheet(`<h3>ตรวจก่อนส่ง</h3><p class="note">Jarvis แยกได้ ${items.length} เรื่อง แตะเพื่อเปลี่ยนความด่วนหรือลบ แก้รายละเอียดได้ภายหลังบนบอร์ด</p>
+    <div id="revList" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div class="row"><button class="btn sec" id="revBack">กลับไปแก้ข้อความ</button><button class="btn pri" id="revOk">เพิ่มเข้าบอร์ด</button></div>`);
+  draw();
+  $("#revBack").onclick = () => openRecorder(hintCat, false, sourceText);
+  $("#revOk").onclick = async () => {
+    if (!pending.length) { closeAll(); return; }
+    const now = Date.now();
+    const list = pending.map(it => ({ ...it, createdAt: now, by: P.name || "" }));
+    try { await store.addItems(list); } catch (e) { toast("บันทึกไม่สำเร็จ: " + (e.code || e.message)); return; }
+    briefSheet(list, "อัปเดตระหว่างกะ");
+  };
+}
+
+// ---------------- brief ----------------
+function buildBrief(items, title) {
+  const by = p => items.filter(i => i.pri === p).sort((a, b) => (a.due || "99").localeCompare(b.due || "99"));
+  const u = by("urgent").length;
+  let t = `📋 ส่งเวร FO · ${P.from} → ${P.to}\n${title} · ${fmt(Date.now())}\n`;
+  t += u ? `⚠️ ด่วน ${u} เรื่อง จากทั้งหมด ${items.length}\n` : `ไม่มีเรื่องด่วน · ทั้งหมด ${items.length} เรื่อง\n`;
+  for (const p of ["urgent", "follow", "info"]) {
+    const l = by(p); if (!l.length) continue;
+    t += `\n${PRI_ICON[p]} ${PRI[p]} (${l.length})\n`;
+    for (const it of l) {
+      t += `• ${it.room}${it.guest ? " " + it.guest : ""} — ${it.summary}\n`;
+      if (it.action || it.due) t += `   → ${it.action || "ติดตาม"}${it.due ? " | ภายใน " + it.due : ""}\n`;
+    }
+  }
+  t += `\nผู้ส่ง: ${P.name || "-"}\nรับเวรแล้วตอบ "รับ" ในกลุ่มนี้ด้วยครับ`;
+  return t;
+}
+function briefSheet(items, title) {
+  let briefId = null;
+  openSheet(`<h3>บรีฟพร้อมส่ง</h3>
+    <div class="grid2">
+      <div><label class="lab" for="from">กะที่ส่ง</label><input type="text" id="from" value="${esc(P.from)}"></div>
+      <div><label class="lab" for="to">กะที่รับ</label><input type="text" id="to" value="${esc(P.to)}"></div>
+    </div>
+    <div><label class="lab" for="sender">ชื่อผู้ส่ง</label><input type="text" id="sender" placeholder="เช่น คิว (FOM)" value="${esc(P.name)}"></div>
+    <pre class="brief" id="briefTxt"></pre>
+    <div class="row" id="sendRow">
+      ${SERVER.linePush ? `<button class="btn line" id="push">ส่งเข้ากลุ่มทีม</button>` : `<a class="btn line" id="ln" href="#" target="_blank" rel="noopener">เปิดใน LINE</a>`}
+      <button class="btn sec" id="cp">คัดลอก</button>
+    </div>
+    <p class="err" id="sendErr" hidden></p>
+    <p class="note">${SERVER.linePush ? "ส่งผ่านบัญชี LINE OA ของทีม เพื่อนตอบ “รับ” ในกลุ่มแล้วชื่อจะขึ้นในหน้าบรีฟที่ส่ง" : "“เปิดใน LINE” จะเปิดหน้าเลือกแชท ถ้าไม่เปิด ให้คัดลอกแล้ววางในกลุ่มเอง"}</p>`);
+  const upd = () => {
+    P.from = $("#from").value.trim() || "กะเช้า"; P.to = $("#to").value.trim() || "กะบ่าย"; P.name = $("#sender").value.trim(); savePrefs();
+    const t = buildBrief(items, title);
+    $("#briefTxt").textContent = t;
+    const ln = $("#ln"); if (ln) ln.href = "https://line.me/R/share?text=" + encodeURIComponent(t);
+    $("#shiftLabel").textContent = `${P.from} → ${P.to}`;
+    return t;
+  };
+  ["from", "to", "sender"].forEach(id => $("#" + id).addEventListener("input", upd));
+  upd();
+  const log = async (text, via) => {
+    if (briefId) { store.patchBrief(briefId, { text, via }).catch(() => {}); return briefId; }
+    briefId = await store.addBrief({ at: Date.now(), text, title, n: items.length, urgent: items.filter(i => i.pri === "urgent").length, by: P.name || "", from: P.from, to: P.to, via, acks: [] }).catch(() => null);
+    return briefId;
+  };
+  $("#cp").onclick = () => { const t = upd(); copy(t); log(t, "คัดลอก"); };
+  const ln = $("#ln"); if (ln) ln.onclick = () => { log(upd(), "LINE share"); };
+  const push = $("#push");
+  if (push) push.onclick = async () => {
+    const t = upd(); push.disabled = true; push.textContent = "กำลังส่ง…"; $("#sendErr").hidden = true;
+    try {
+      const id = await log(t, "LINE OA");
+      await api("line-push", { text: t, briefId: id });
+      closeAll(); toast("ส่งเข้ากลุ่มแล้ว รอเพื่อนตอบ “รับ”");
+    } catch (e) {
+      $("#sendErr").textContent = e.message + " ลองคัดลอกแล้ววางเองได้"; $("#sendErr").hidden = false;
+      push.disabled = false; push.textContent = "ส่งเข้ากลุ่มทีม";
+    }
+  };
+}
+$("#sendAll").onclick = () => {
+  const open = ITEMS.filter(i => !i.done);
+  if (!open.length) { toast("ไม่มีเรื่องค้าง กะนี้เคลียร์แล้ว"); return; }
+  briefSheet(open, "สรุปทั้งกะ");
+};
+function copy(t) {
+  const ok = () => toast("คัดลอกแล้ว วางในกลุ่ม LINE ได้เลย");
+  const fallback = () => {
+    const pre = $("#briefTxt") || document.querySelector("details[open] pre.brief");
+    if (pre) { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("เลือกข้อความให้แล้ว กดคัดลอกเอง"); }
+    else toast("คัดลอกไม่ได้ในเบราว์เซอร์นี้");
+  };
+  try { navigator.clipboard.writeText(t).then(ok, fallback); } catch (e) { fallback(); }
+}
+
+// ---------------- item detail / edit ----------------
+function openItem(id) {
+  const it = ITEMS.find(i => i.id === id); if (!it) return;
+  let pri = it.pri;
+  openSheet(`<h3>ห้อง ${esc(it.room)} ${it.ex ? '<span class="tag ex">ตัวอย่าง</span>' : ""}</h3>
+    <p class="note">${esc(CAT_NAME[it.cat])}${it.by ? " · บันทึกโดย " + esc(it.by) : ""}${it.createdAt ? " · " + esc(fmt(it.createdAt)) : ""}${it.done && it.doneBy ? " · ปิดโดย " + esc(it.doneBy) : ""}</p>
+    <div class="chips" id="priChips">${Object.keys(PRI).map(p => `<button class="chip ${p} ${p === pri ? "on" : ""}" data-p="${p}">${PRI[p]}</button>`).join("")}</div>
+    <div class="grid2">
+      <div><label class="lab" for="eRoom">ห้อง</label><input type="text" id="eRoom" value="${esc(it.room)}"></div>
+      <div><label class="lab" for="eDue">ภายใน</label><input type="time" id="eDue" value="${esc(it.due)}"></div>
+    </div>
+    <div><label class="lab" for="eGuest">แขก (ย่อ)</label><input type="text" id="eGuest" value="${esc(it.guest)}" placeholder="คุณ T. (VIP)"></div>
+    <div><label class="lab" for="eSum">สถานการณ์</label><textarea id="eSum" style="min-height:80px">${esc(it.summary)}</textarea></div>
+    <div><label class="lab" for="eAct">สิ่งที่ต้องทำ</label><textarea id="eAct" style="min-height:70px">${esc(it.action)}</textarea></div>
+    <div><label class="lab" for="eCat">หมวด</label><select id="eCat">${CATS.map(c => `<option value="${c.id}" ${c.id === it.cat ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div>
+    <div class="row"><button class="btn sec" id="saveIt">บันทึกการแก้ไข</button><button class="btn pri" id="doneIt">${it.done ? "เปิดเรื่องอีกครั้ง" : "ปิดเรื่องนี้"}</button></div>
+    <button class="btn danger" id="delIt">ลบเรื่องนี้</button>
+    <p class="note" id="delAsk" hidden>แตะ “ยืนยันลบ” อีกครั้งเพื่อลบถาวร</p>`);
+  $("#priChips").querySelectorAll("[data-p]").forEach(b => b.onclick = () => { pri = b.dataset.p; $("#priChips").querySelectorAll(".chip").forEach(c => c.classList.toggle("on", c.dataset.p === pri)); });
+  const patch = () => ({ pri, room: $("#eRoom").value.trim() || "—", due: $("#eDue").value, guest: $("#eGuest").value.trim(), summary: $("#eSum").value.trim(), action: $("#eAct").value.trim(), cat: $("#eCat").value });
+  const run = (p, msg) => store.updateItem(it.id, p).then(() => { closeAll(); toast(msg); }).catch(e => toast("บันทึกไม่สำเร็จ: " + (e.code || e.message)));
+  $("#saveIt").onclick = () => run(patch(), "บันทึกแล้ว");
+  $("#doneIt").onclick = () => run({ ...patch(), done: !it.done, doneBy: P.name || "", doneAt: Date.now() }, it.done ? "เปิดเรื่องอีกครั้งแล้ว" : "ปิดเรื่องแล้ว");
+  let armed = false;
+  $("#delIt").onclick = () => {
+    if (!armed) { armed = true; $("#delIt").textContent = "ยืนยันลบ"; $("#delAsk").hidden = false; return; }
+    store.deleteItem(it.id).then(() => { closeAll(); toast("ลบแล้ว"); });
+  };
+}
+
+// ---------------- settings ----------------
+function openSettings() {
+  const cloud = !!CFG.firebase;
+  const signedIn = !!fb?.user;
+  openSheet(`<h3>ตั้งค่า</h3>
+    <div><label class="lab" for="sName">ชื่อของคุณ (ขึ้นในบรีฟและตอนรับเวร)</label><input type="text" id="sName" value="${esc(P.name)}" placeholder="เช่น คิว (FOM)"></div>
+    <div class="grid2">
+      <div><label class="lab" for="sFrom">กะที่ส่ง</label><input type="text" id="sFrom" value="${esc(P.from)}"></div>
+      <div><label class="lab" for="sTo">กะที่รับ</label><input type="text" id="sTo" value="${esc(P.to)}"></div>
+    </div>
+    ${cloud ? `<div class="bcard"><div class="bhead">บัญชีทีม</div>
+      <p class="note">${signedIn ? "เข้าสู่ระบบเป็น " + esc(fb.user.email) + " ข้อมูลซิงก์กับทุกคนในทีม" : "เข้าสู่ระบบด้วย Google เพื่อเห็นบอร์ดเดียวกันทั้งทีม อีเมลต้องอยู่ในรายชื่อทีมก่อน"}</p>
+      <button class="btn ${signedIn ? "sec" : "dark"}" id="authBtn">${signedIn ? "ออกจากระบบ" : "เข้าสู่ระบบด้วย Google"}</button></div>` : ""}
+    ${!signedIn && (SERVER.pin || SERVER.ai) ? `<div><label class="lab" for="sPin">PIN ทีม (ใช้ AI และส่ง LINE โดยไม่ต้องเข้าสู่ระบบ)</label><input type="password" id="sPin" value="${esc(P.pin)}" autocomplete="off"></div>` : ""}
+    <p class="note">โหมดตอนนี้: ${store.mode === "cloud" ? "ซิงก์กับทีม" : "เก็บในเครื่องนี้เท่านั้น"} · AI: ${claudeSample ? "Claude (ในแอป Claude)" : SERVER.ai ? "Claude ผ่านเซิร์ฟเวอร์" : "ตัวแยกพื้นฐาน"} · LINE: ${SERVER.linePush ? "ส่งอัตโนมัติ" : "แชร์/คัดลอก"}</p>
+    <button class="btn pri" id="saveSet">บันทึก</button>`);
+  $("#saveSet").onclick = () => {
+    P.name = $("#sName").value.trim(); P.from = $("#sFrom").value.trim() || "กะเช้า"; P.to = $("#sTo").value.trim() || "กะบ่าย";
+    const pin = $("#sPin"); if (pin) P.pin = pin.value.trim();
+    savePrefs(); render(); closeAll(); toast("บันทึกแล้ว");
+  };
+  const ab = $("#authBtn");
+  if (ab) ab.onclick = async () => { if (!fb) return toast("เชื่อมต่อ Firebase ไม่ได้"); if (fb.user) { await fb.authM.signOut(fb.auth); closeAll(); toast("ออกจากระบบแล้ว"); } else signIn(); };
+}
+
+// ---------------- boot ----------------
+store.start();
+renderSync();
+startCloud();
+if ("serviceWorker" in navigator && location.protocol === "https:" && !location.hostname.endsWith("claude.ai") && !location.hostname.endsWith("claudeusercontent.com")) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+})();
+</script>
+</body>
+</html>
